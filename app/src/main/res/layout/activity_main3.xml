@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/page2_background"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <!-- Header Title -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="60dp"
+        android:gravity="center"
+        android:text="To Do List"
+        android:textColor="#FFFFFF"
+        android:textSize="36sp"
+        android:textStyle="bold" />
+
+    <!-- Container untuk 3 Button dengan Background Gradient Gelap -->
+    <LinearLayout
+        android:layout_width="360dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="30dp"
+        android:radius="25dp">
+
+        <!-- ADD TASK Button -->
+        <LinearLayout
+            android:id="@+id/btnAddTask"
+            android:layout_width="match_parent"
+            android:layout_height="95dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/dark_gradient_background"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="20dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <!-- Logo Plus -->
+            <LinearLayout
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginEnd="20dp"
+                android:background="@drawable/circle_blue_bg"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:contentDescription="Add Task Icon"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/plus" />
+
+            </LinearLayout>
+
+            <!-- Text ADD TASK -->
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="ADD TASK"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- VIEW TASK Button -->
+        <LinearLayout
+            android:id="@+id/btnViewTask"
+            android:layout_width="match_parent"
+            android:layout_height="95dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/dark_gradient_background"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="20dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <!-- Logo View -->
+            <LinearLayout
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginEnd="20dp"
+                android:background="@drawable/circle_green_bg"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:contentDescription="View Task Icon"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/icon" />
+
+            </LinearLayout>
+
+            <!-- Text VIEW TASK -->
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="VIEW TASK"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- NOTES Button -->
+        <LinearLayout
+            android:id="@+id/btnNotes"
+            android:layout_width="match_parent"
+            android:layout_height="95dp"
+            android:background="@drawable/dark_gradient_background"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="20dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <!-- Logo Notes -->
+            <LinearLayout
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginEnd="20dp"
+                android:background="@drawable/circle_orange_bg"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:contentDescription="Notes Icon"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/book" />
+
+            </LinearLayout>
+
+            <!-- Text NOTES -->
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="NOTES"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

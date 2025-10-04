@@ -1,0 +1,17 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- warna agak transparan -->
+    <solid android:color="#66FFFFFF"/>
+    <!-- #66 = transparan 40%, FFFFFF = putih -->
+
+    <!-- radius sudut -->
+    <corners android:radius="20dp"/>
+
+    <!-- padding biar ada jarak teks -->
+    <padding
+        android:left="12dp"
+        android:top="12dp"
+        android:right="12dp"
+        android:bottom="12dp"/>
+</shape>

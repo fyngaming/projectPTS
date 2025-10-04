@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/page2_background"
+    android:gravity="center">
+
+    <!-- Content Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="40dp">
+
+        <!-- Icon -->
+        <ImageView
+            android:id="@+id/ivLogo"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:src="@drawable/icon_login"
+            android:contentDescription="App Logo"
+            android:layout_marginBottom="50dp"
+            />
+
+        <!-- Text Section dengan Shadow -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Simplify, Organize, and"
+            android:textSize="20sp"
+            android:textColor="#E0E0E0"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="8dp"
+            android:shadowColor="#000000"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="4" />
+
+        <!-- "Conquer Your Day" dengan "Your Day" berwarna hijau -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="30dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Conquer "
+                android:textSize="28sp"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:shadowColor="#000000"
+                android:shadowDx="2"
+                android:shadowDy="2"
+                android:shadowRadius="4" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Your Day"
+                android:textSize="28sp"
+                android:textColor="#4CAF50"
+                android:textStyle="bold"
+                android:shadowColor="#000000"
+                android:shadowDx="2"
+                android:shadowDy="2"
+                android:shadowRadius="4" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Take control of your task and"
+            android:textSize="16sp"
+            android:textColor="#E0E0E0"
+            android:gravity="center"
+            android:layout_marginBottom="4dp"
+            android:shadowColor="#000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="3" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="achieve your goals"
+            android:textSize="16sp"
+            android:textColor="#E0E0E0"
+            android:gravity="center"
+            android:layout_marginBottom="50dp"
+            android:shadowColor="#000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="3" />
+
+        <!-- Tombol Get Started dengan Shadow -->
+        <Button
+            android:id="@+id/btnGetStarted"
+            android:layout_width="300dp"
+            android:layout_height="60dp"
+            android:text="Get Started"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:background="@drawable/button_purple_bg"
+            android:textColor="#FFFFFF"
+            android:elevation="8dp"
+            android:shadowColor="#000000"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="4" />
+
+    </LinearLayout>
+</LinearLayout>
