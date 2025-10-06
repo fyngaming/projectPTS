@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background putih dengan opacity rendah -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#B3FFFFFF" /> <!-- Putih dengan 70% opacity -->
+        </shape>
+    </item>
+
+    <!-- Garis lengkung di atas -->
+    <item android:top="-40dp">
+        <shape android:shape="rectangle">
+            <corners android:topLeftRadius="60dp" android:topRightRadius="60dp" />
+            <solid android:color="#B3FFFFFF" /> <!-- Putih dengan 70% opacity -->
+        </shape>
+    </item>
+</layer-list>

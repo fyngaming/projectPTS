@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Background Gradient Biru Pertama: 2C3E50 0% opacity -> 4CA1AF 100% opacity -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#002C3E50"
+                android:endColor="#FF4CA1AF"
+                android:angle="135" />
+        </shape>
+    </item>
+
+    <!-- Background Biru Kedua: 2C3E50 63% opacity -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#A12C3E50" />
+        </shape>
+    </item>
+
+</layer-list>

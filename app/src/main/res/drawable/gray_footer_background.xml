@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Background abu-abu dengan opacity rendah -->
+    <solid android:color="#33CCCCCC" /> <!-- Abu-abu 20% opacity -->
+
+    <!-- Radius di bagian atas -->
+    <corners
+        android:topLeftRadius="25dp"
+        android:topRightRadius="25dp" />
+
+</shape>

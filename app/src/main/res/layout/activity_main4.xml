@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+            <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/notes_three_layer_background"
+                android:padding="16dp">
+
+                <!-- Tombol Back (Panah) di Pojok Kiri Atas -->
+                <ImageButton
+                    android:id="@+id/backButton"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginStart="16dp"
+                    android:background="@drawable/notes_button_background"
+                    android:src="@drawable/panah"
+                    android:contentDescription="Kembali ke activity sebelumnya"
+                    android:elevation="8dp" />
+
+                <!-- Background Putih Diatas Gradient -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#D9D9D9"
+                    android:orientation="vertical"
+                    android:padding="20dp"
+                    android:radius="20dp">
+
+                    <!-- Header -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginBottom="30dp"
+                        android:gravity="center"
+                        android:text="Notes"
+                        android:textColor="#2C3E50"
+                        android:textSize="32sp"
+                        android:textStyle="bold" />
+
+                    <!-- Container untuk Form -->
+                    <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:padding="8dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <!-- Judul Input -->
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="8dp"
+                                android:text="Judul Catatan"
+                                android:textColor="#2C3E50"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <!-- Input Judul -->
+                            <EditText
+                                android:id="@+id/etNoteTitle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="24dp"
+                                android:background="@drawable/notes_edittext_background"
+                                android:hint="Tambahkan Judul..."
+                                android:padding="16dp"
+                                android:textColor="#2C3E50"
+                                android:textColorHint="#666666"
+                                android:textSize="16sp"
+                                android:maxLines="1"
+                                android:imeOptions="actionNext" />
+
+                            <!-- Isi Input -->
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="8dp"
+                                android:text="Isi Catatan"
+                                android:textColor="#2C3E50"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <!-- Input Isi Catatan -->
+                            <EditText
+                                android:id="@+id/etNoteContent"
+                                android:layout_width="match_parent"
+                                android:layout_height="200dp"
+                                android:background="@drawable/notes_edittext_background"
+                                android:gravity="top"
+                                android:hint="Masukan materi anda...."
+                                android:padding="16dp"
+                                android:textColor="#2C3E50"
+                                android:textColorHint="#666666"
+                                android:textSize="14sp"
+                                android:inputType="textMultiLine"
+                                android:maxLines="10"
+                                android:scrollbars="vertical" />
+
+                        </LinearLayout>
+
+                    </ScrollView>
+
+                </LinearLayout>
+
+                <!-- Add Button di Kanan Bawah -->
+                <Button
+                    android:id="@+id/btnAddNote"
+                    android:layout_width="120dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_margin="24dp"
+                    android:background="@drawable/notes_add_button_gradient"
+                    android:text="Add"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:stateListAnimator="@null"
+                    android:elevation="8dp" />
+
+            </RelativeLayout>

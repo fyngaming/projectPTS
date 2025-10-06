@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+
+    <!-- Background putih -->
+    <solid android:color="#FFFFFF" />
+
+    <!-- Size akan dikontrol oleh layout_width dan layout_height -->
+
+</shape>

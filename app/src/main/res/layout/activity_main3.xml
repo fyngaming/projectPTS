@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/page2_background"
     android:gravity="center"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingBottom="20dp">
 
     <!-- Header Title -->
     <TextView
@@ -13,7 +15,7 @@
         android:layout_marginTop="40dp"
         android:layout_marginBottom="60dp"
         android:gravity="center"
-        android:text="To Do List"
+        android:text="@string/to_do_list"
         android:textColor="#FFFFFF"
         android:textSize="36sp"
         android:textStyle="bold" />
@@ -25,7 +27,8 @@
         android:gravity="center"
         android:orientation="vertical"
         android:padding="30dp"
-        android:radius="25dp">
+
+        android:baselineAligned="true">
 
         <!-- ADD TASK Button -->
         <LinearLayout
@@ -38,7 +41,10 @@
             android:orientation="horizontal"
             android:paddingHorizontal="20dp"
             android:clickable="true"
-            android:focusable="true">
+            android:focusable="true"
+            android:minHeight="48dp"
+            android:minWidth="48dp"
+            tools:ignore="DuplicateClickableBounds">
 
             <!-- Logo Plus -->
             <LinearLayout
@@ -46,12 +52,14 @@
                 android:layout_height="60dp"
                 android:layout_marginEnd="20dp"
                 android:background="@drawable/circle_blue_bg"
-                android:gravity="center">
+                android:gravity="center"
+                android:contentDescription="@string/add_task_icon_desc">
 
                 <ImageView
                     android:layout_width="30dp"
                     android:layout_height="30dp"
-                    android:contentDescription="Add Task Icon"
+                    android:contentDescription="@string/add_task_icon"
+                    android:importantForAccessibility="yes"
                     android:scaleType="centerInside"
                     android:src="@drawable/plus" />
 
@@ -62,7 +70,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="ADD TASK"
+                android:text="@string/add_task"
                 android:textColor="#FFFFFF"
                 android:textSize="20sp"
                 android:textStyle="bold" />
@@ -80,7 +88,10 @@
             android:orientation="horizontal"
             android:paddingHorizontal="20dp"
             android:clickable="true"
-            android:focusable="true">
+            android:focusable="true"
+            android:minHeight="48dp"
+            android:minWidth="48dp"
+            tools:ignore="DuplicateClickableBounds">
 
             <!-- Logo View -->
             <LinearLayout
@@ -88,12 +99,14 @@
                 android:layout_height="60dp"
                 android:layout_marginEnd="20dp"
                 android:background="@drawable/circle_green_bg"
-                android:gravity="center">
+                android:gravity="center"
+                android:contentDescription="@string/view_task_icon_desc">
 
                 <ImageView
                     android:layout_width="30dp"
                     android:layout_height="30dp"
-                    android:contentDescription="View Task Icon"
+                    android:contentDescription="@string/view_task_icon"
+                    android:importantForAccessibility="yes"
                     android:scaleType="centerInside"
                     android:src="@drawable/icon" />
 
@@ -104,7 +117,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="VIEW TASK"
+                android:text="@string/view_task"
                 android:textColor="#FFFFFF"
                 android:textSize="20sp"
                 android:textStyle="bold" />
@@ -121,7 +134,10 @@
             android:orientation="horizontal"
             android:paddingHorizontal="20dp"
             android:clickable="true"
-            android:focusable="true">
+            android:focusable="true"
+            android:minHeight="48dp"
+            android:minWidth="48dp"
+            tools:ignore="DuplicateClickableBounds">
 
             <!-- Logo Notes -->
             <LinearLayout
@@ -129,12 +145,14 @@
                 android:layout_height="60dp"
                 android:layout_marginEnd="20dp"
                 android:background="@drawable/circle_orange_bg"
-                android:gravity="center">
+                android:gravity="center"
+                android:contentDescription="@string/notes_icon_desc">
 
                 <ImageView
                     android:layout_width="30dp"
                     android:layout_height="30dp"
-                    android:contentDescription="Notes Icon"
+                    android:contentDescription="@string/notes_icon"
+                    android:importantForAccessibility="yes"
                     android:scaleType="centerInside"
                     android:src="@drawable/book" />
 
@@ -145,10 +163,116 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="NOTES"
+                android:text="@string/notes"
                 android:textColor="#FFFFFF"
                 android:textSize="20sp"
                 android:textStyle="bold" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- SPACER UNTUK MENDORONG FOOTER KE BAWAH -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- FOOTER DENGAN BACKGROUND ABU-ABU -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/gray_footer_background"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingHorizontal="40dp">
+
+        <!-- Logo 1 - Home dengan Background Oval Putih yang DICENTER -->
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <!-- Background Oval Putih yang Ditempatkan Tepat di Tengah Belakang Logo -->
+            <View
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_centerInParent="true"
+                android:background="@drawable/white_oval_background" />
+
+            <!-- Container untuk Logo Home -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:minHeight="48dp"
+                android:minWidth="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/home_button_desc">
+
+                <ImageView
+                    android:id="@+id/footer_home"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/home"
+                    android:contentDescription="@string/home_icon"
+                    android:importantForAccessibility="yes" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <!-- Logo 2 - Add -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:minHeight="48dp"
+            android:minWidth="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/add_button_desc">
+
+            <ImageView
+                android:id="@+id/footer_add"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/plus_vektor"
+                android:contentDescription="@string/add_icon"
+                android:importantForAccessibility="yes" />
+
+        </LinearLayout>
+
+        <!-- Logo 3 - Notes -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:minHeight="48dp"
+            android:minWidth="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/notes_button_desc">
+
+            <ImageView
+                android:id="@+id/footer_notes"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/book"
+                android:contentDescription="@string/notes_icon_footer"
+                android:importantForAccessibility="yes" />
 
         </LinearLayout>
 

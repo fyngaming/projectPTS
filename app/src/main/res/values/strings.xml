@@ -1,3 +1,39 @@
 <resources>
     <string name="app_name">projectPTS</string>
+
+    <!-- Main Title -->
+    <string name="to_do_list">To Do List</string>
+
+
+    <!-- Button Texts -->
+    <string name="add_task">ADD TASK</string>
+    <string name="view_task">VIEW TASK</string>
+    <string name="notes">NOTES</string>
+
+    <!-- Content Descriptions for Accessibility -->
+    <string name="add_task_icon">Add Task Icon</string>
+    <string name="view_task_icon">View Task Icon</string>
+    <string name="notes_icon">Notes Icon</string>
+    <string name="home_icon">Home Icon</string>
+    <string name="add_icon">Add Icon</string>
+    <string name="notes_icon_footer">Notes Icon</string>
+
+    <string name="add_task_icon_desc">Button to add new task</string>
+    <string name="view_task_icon_desc">Button to view existing tasks</string>
+    <string name="notes_icon_desc">Button to access notes</string>
+    <string name="home_button_desc">Navigate to home screen</string>
+    <string name="add_button_desc">Navigate to add task screen</string>
+    <string name="notes_button_desc">Navigate to notes screen</string>
+
+    <!-- Add these to your existing strings.xml -->
+    <string name="notes_title">Notes</string>
+    <string name="note_title">Judul Catatan</string>
+    <string name="note_title_hint">Tambahkan Judul...</string>
+    <string name="note_content">Isi Catatan</string>
+    <string name="note_content_hint">Masukkan materi anda....</string>
+    <string name="add_note">Add</string>
+    <string name="home">Home</string>
+    <string name="add">Add</string>
+
+
 </resources>
