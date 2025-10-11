@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/taskItemLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@drawable/task_item_background"
+    android:padding="16dp"
+    android:layout_margin="8dp"
+    android:gravity="center_vertical">
+
+    <!-- Checkbox Circle -->
+    <RelativeLayout
+        android:id="@+id/checkCircle"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/check_circle_background"
+        android:gravity="center">
+
+        <!-- Check Mark -->
+        <ImageView
+            android:id="@+id/checkMark"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_check_white"
+            android:visibility="invisible"
+            android:layout_centerInParent="true" />
+
+    </RelativeLayout>
+
+    <!-- Task Details -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- Task Name -->
+        <TextView
+            android:id="@+id/tvTaskName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Task Name"
+            android:textColor="#2C3E50"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <!-- Task Date -->
+        <TextView
+            android:id="@+id/tvTaskDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Date: September 15, 2025"
+            android:textColor="#666666"
+            android:textSize="12sp"
+            android:layout_marginTop="2dp" />
+
+        <!-- Task Time -->
+        <TextView
+            android:id="@+id/tvTaskTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Time: 15:00 - 22:00"
+            android:textColor="#666666"
+            android:textSize="12sp"
+            android:layout_marginTop="2dp" />
+
+    </LinearLayout>
+
+    <!-- Task Color Indicator -->
+    <View
+        android:id="@+id/colorIndicator"
+        android:layout_width="4dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:background="#FF6B6B" />
+
+</LinearLayout>

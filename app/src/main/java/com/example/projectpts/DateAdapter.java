@@ -5,70 +5,83 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
-public class DateAdapter extends RecyclerView.Adapter<DateAdapter.ViewHolder> {
-    private List<DateItem> dateList;
+public class DateAdapter extends RecyclerView.Adapter<DateAdapter.DateViewHolder> {
+
+    private List<Calendar> dates;
+    private String selectedDate;
     private OnDateClickListener listener;
 
     public interface OnDateClickListener {
-        void onDateClick(DateItem dateItem);
+        void onDateClick(String date);
     }
 
-    public DateAdapter(List<DateItem> dateList, OnDateClickListener listener) {
-        this.dateList = dateList;
+    public DateAdapter(List<Calendar> dates, String selectedDate, OnDateClickListener listener) {
+        this.dates = dates;
+        this.selectedDate = selectedDate;
         this.listener = listener;
     }
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public DateViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_date, parent, false);
-        return new ViewHolder(view);
+        return new DateViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        DateItem item = dateList.get(position);
-        holder.bind(item, listener);
+    public void onBindViewHolder(@NonNull DateViewHolder holder, int position) {
+        Calendar date = dates.get(position);
+        holder.bind(date, selectedDate, listener);
     }
 
     @Override
     public int getItemCount() {
-        return dateList.size();
+        return dates.size();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvDay;
-        View selectionIndicator;
+    static class DateViewHolder extends RecyclerView.ViewHolder {
+        private TextView tvDay, tvDate;
 
-        ViewHolder(View itemView) {
+        public DateViewHolder(@NonNull View itemView) {
             super(itemView);
             tvDay = itemView.findViewById(R.id.tvDay);
-            selectionIndicator = itemView.findViewById(R.id.selectionIndicator);
+            tvDate = itemView.findViewById(R.id.tvDate);
         }
 
-        void bind(DateItem item, OnDateClickListener listener) {
-            tvDay.setText(String.valueOf(item.getDay()));
+        public void bind(Calendar date, String selectedDate, OnDateClickListener listener) {
+            SimpleDateFormat dayFormat = new SimpleDateFormat("E", Locale.getDefault());
+            SimpleDateFormat dateFormat = new SimpleDateFormat("d", Locale.getDefault());
+            SimpleDateFormat fullDateFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.getDefault());
 
-            // Set text color based on state
-            if (!item.isCurrentMonth()) {
-                tvDay.setTextColor(Color.GRAY);
-            } else if (item.isToday()) {
-                tvDay.setTextColor(Color.BLUE);
+            String day = dayFormat.format(date.getTime());
+            String dateNum = dateFormat.format(date.getTime());
+            String fullDate = fullDateFormat.format(date.getTime());
+
+            tvDay.setText(day);
+            tvDate.setText(dateNum);
+
+            // Highlight selected date
+            if (fullDate.equals(selectedDate)) {
+                itemView.setBackgroundColor(Color.parseColor("#E3F2FD"));
+                tvDate.setTextColor(Color.parseColor("#1976D2"));
             } else {
-                tvDay.setTextColor(Color.parseColor("#2C3E50"));
+                itemView.setBackgroundColor(Color.TRANSPARENT);
+                tvDate.setTextColor(Color.BLACK);
             }
 
-            // Show selection indicator
-            selectionIndicator.setVisibility(item.isSelected() ? View.VISIBLE : View.INVISIBLE);
-
-            itemView.setOnClickListener(v -> listener.onDateClick(item));
+            itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onDateClick(fullDate);
+                }
+            });
         }
     }
 }

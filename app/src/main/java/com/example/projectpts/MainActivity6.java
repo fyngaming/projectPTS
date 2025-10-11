@@ -1,13 +1,9 @@
 package com.example.projectpts;
 
-import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,11 +14,14 @@ import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -31,28 +30,26 @@ import java.util.Locale;
 public class MainActivity6 extends AppCompatActivity {
 
     private EditText etTaskName, etStartTime, etEndTime;
-    private LinearLayout colorContainer;
-    private TextView tvCurrentMonthYear, tvSelectedDate;
     private Button btnSaveTask;
-    private ImageButton btnPrevMonth, btnNextMonth;
-
-    private Calendar selectedCalendar;
-    private Calendar currentCalendar;
-    private int selectedColor = Color.parseColor("#4CAF50");
-    private int selectedDate = -1;
+    private ImageButton backButton, btnPrevMonth, btnNextMonth;
+    private TextView tvCurrentMonthYear, tvSelectedDate;
+    private LinearLayout colorContainer;
+    private RecyclerView recyclerViewCalendar;
 
     private SharedPreferences sharedPreferences;
     private Gson gson;
+
+    private Calendar currentCalendar;
+    private String selectedDate;
+    private int selectedColor = Color.parseColor("#FF6B6B");
+
     private static final String PREFS_NAME = "TaskPrefs";
     private static final String TASKS_KEY = "tasks";
 
-    private final int[] colors = {
-            Color.parseColor("#FF5252"), // Red
-            Color.parseColor("#FF9800"), // Orange
-            Color.parseColor("#FFEB3B"), // Yellow
-            Color.parseColor("#4CAF50"), // Green
-            Color.parseColor("#2196F3"), // Blue
-            Color.parseColor("#9C27B0"), // Purple
+    // Array warna untuk color picker
+    private final String[] colorCodes = {
+            "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7",
+            "#DDA0DD", "#98D8C8", "#F7DC6F", "#BB8FCE", "#85C1E9"
     };
 
     @Override
@@ -60,45 +57,170 @@ public class MainActivity6 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main6);
 
-        // Initialize SharedPreferences and Gson
+        // Initialize SharedPreferences dan Gson
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         gson = new Gson();
 
+        // Setup calendar dengan tanggal saat ini
+        currentCalendar = Calendar.getInstance();
+        selectedDate = getFormattedDate(currentCalendar);
+
         initViews();
-        setupBackButton();
         setupCalendar();
         setupColorPicker();
-        setupTimePickers();
         setupSaveButton();
-        setupMonthNavigation();
+        setupBackButton();
+        setupBackPressedHandler();
     }
 
     private void initViews() {
+        // Text inputs
         etTaskName = findViewById(R.id.etTaskName);
         etStartTime = findViewById(R.id.etStartTime);
         etEndTime = findViewById(R.id.etEndTime);
-        colorContainer = findViewById(R.id.colorContainer);
-        tvCurrentMonthYear = findViewById(R.id.tvCurrentMonthYear);
-        tvSelectedDate = findViewById(R.id.tvSelectedDate);
+
+        // Buttons
         btnSaveTask = findViewById(R.id.btnSaveTask);
+        backButton = findViewById(R.id.backButton);
         btnPrevMonth = findViewById(R.id.btnPrevMonth);
         btnNextMonth = findViewById(R.id.btnNextMonth);
 
-        ImageButton backButton = findViewById(R.id.backButton);
-        backButton.setOnClickListener(v -> kembaliKeActivity3());
+        // Calendar views
+        tvCurrentMonthYear = findViewById(R.id.tvCurrentMonthYear);
+        tvSelectedDate = findViewById(R.id.tvSelectedDate);
+        recyclerViewCalendar = findViewById(R.id.recyclerViewCalendar);
+        colorContainer = findViewById(R.id.colorContainer);
+    }
 
-        // Initialize calendars
-        selectedCalendar = Calendar.getInstance();
-        currentCalendar = Calendar.getInstance();
-        currentCalendar.set(2025, Calendar.MARCH, 1); // Set to March 2025
+    private void setupCalendar() {
+        // Set current month year
+        updateMonthYearDisplay();
 
-        // Set default selection
-        selectedDate = 15;
-        selectedCalendar.set(2025, Calendar.MARCH, 15);
+        // Setup RecyclerView untuk calendar
+        setupRecyclerViewCalendar();
+
+        // Setup month navigation buttons
+        btnPrevMonth.setOnClickListener(v -> {
+            currentCalendar.add(Calendar.MONTH, -1);
+            updateMonthYearDisplay();
+            setupRecyclerViewCalendar();
+        });
+
+        btnNextMonth.setOnClickListener(v -> {
+            currentCalendar.add(Calendar.MONTH, 1);
+            updateMonthYearDisplay();
+            setupRecyclerViewCalendar();
+        });
+
+        // Update selected date display
         updateSelectedDateDisplay();
     }
 
+    private void setupRecyclerViewCalendar() {
+        // Buat list tanggal untuk bulan ini
+        List<CalendarDay> calendarDays = generateCalendarDays();
+
+        // Setup adapter untuk RecyclerView
+        CalendarAdapter adapter = new CalendarAdapter(calendarDays, selectedDate, new CalendarAdapter.OnDateClickListener() {
+            @Override
+            public void onDateClick(String date) {
+                selectedDate = date;
+                updateSelectedDateDisplay();
+                // Refresh adapter untuk update selection
+                setupRecyclerViewCalendar();
+            }
+        });
+
+        recyclerViewCalendar.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        recyclerViewCalendar.setAdapter(adapter);
+    }
+
+    private List<CalendarDay> generateCalendarDays() {
+        List<CalendarDay> days = new ArrayList<>();
+
+        Calendar tempCalendar = (Calendar) currentCalendar.clone();
+        int maxDaysInMonth = tempCalendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+
+        for (int day = 1; day <= maxDaysInMonth; day++) {
+            Calendar dayCalendar = (Calendar) currentCalendar.clone();
+            dayCalendar.set(Calendar.DAY_OF_MONTH, day);
+
+            String date = getFormattedDate(dayCalendar);
+            boolean isSelected = date.equals(selectedDate);
+
+            // Format untuk display di horizontal calendar
+            SimpleDateFormat dayFormat = new SimpleDateFormat("EEE", Locale.getDefault());
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd", Locale.getDefault());
+
+            String dayName = dayFormat.format(dayCalendar.getTime());
+            String dateNumber = dateFormat.format(dayCalendar.getTime());
+
+            days.add(new CalendarDay(dayName, dateNumber, date, isSelected));
+        }
+
+        return days;
+    }
+
+    private void updateMonthYearDisplay() {
+        SimpleDateFormat monthFormat = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
+        tvCurrentMonthYear.setText(monthFormat.format(currentCalendar.getTime()));
+    }
+
+    private void updateSelectedDateDisplay() {
+        // Menggunakan resource string dengan placeholder untuk menghindari concatenation warning
+        String selectedDateText = getString(R.string.selected_date_format, selectedDate);
+        tvSelectedDate.setText(selectedDateText);
+    }
+
+    private void setupColorPicker() {
+        colorContainer.removeAllViews();
+
+        int size = dpToPx(32);
+        int margin = dpToPx(6);
+
+        for (String colorCode : colorCodes) {
+            View colorView = new View(this);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
+            params.setMargins(margin, 0, margin, 0);
+            colorView.setLayoutParams(params);
+            colorView.setBackgroundColor(Color.parseColor(colorCode));
+
+            // Add border and rounded corners
+            colorView.setBackground(getResources().getDrawable(R.drawable.color_circle_background));
+            colorView.getBackground().setTint(Color.parseColor(colorCode));
+
+            // Add click listener
+            final String finalColorCode = colorCode;
+            colorView.setOnClickListener(v -> {
+                selectedColor = Color.parseColor(finalColorCode);
+                updateColorSelection(colorView);
+            });
+
+            colorContainer.addView(colorView);
+        }
+    }
+
+    private void updateColorSelection(View selectedView) {
+        // Reset all colors
+        for (int i = 0; i < colorContainer.getChildCount(); i++) {
+            View child = colorContainer.getChildAt(i);
+            child.setBackground(getResources().getDrawable(R.drawable.color_circle_background));
+            child.getBackground().setTint(Color.parseColor(colorCodes[i]));
+        }
+
+        // Highlight selected color
+        selectedView.setBackground(getResources().getDrawable(R.drawable.color_circle_selected));
+    }
+
+    private void setupSaveButton() {
+        btnSaveTask.setOnClickListener(v -> saveTask());
+    }
+
     private void setupBackButton() {
+        backButton.setOnClickListener(v -> kembaliKeActivity3());
+    }
+
+    private void setupBackPressedHandler() {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -107,213 +229,60 @@ public class MainActivity6 extends AppCompatActivity {
         });
     }
 
-    private void setupCalendar() {
-        updateCalendarDisplay();
-    }
-
-    private void setupMonthNavigation() {
-        btnPrevMonth.setOnClickListener(v -> {
-            currentCalendar.add(Calendar.MONTH, -1);
-            updateCalendarDisplay();
-        });
-
-        btnNextMonth.setOnClickListener(v -> {
-            currentCalendar.add(Calendar.MONTH, 1);
-            updateCalendarDisplay();
-        });
-
-        // Month/Year picker
-        tvCurrentMonthYear.setOnClickListener(v -> showSimpleMonthYearPicker());
-    }
-
-    private void showSimpleMonthYearPicker() {
-        // Simple implementation without RecyclerView
-        String[] months = {"January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"};
-
-        int currentYear = currentCalendar.get(Calendar.YEAR);
-
-        String message = "Current: " + months[currentCalendar.get(Calendar.MONTH)] + " " + currentYear;
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-    }
-
-    private void updateCalendarDisplay() {
-        updateMonthYearText();
-        updateSelectedDateDisplay();
-    }
-
-    private void updateMonthYearText() {
-        String[] months = {"January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"};
-        int year = currentCalendar.get(Calendar.YEAR);
-        int month = currentCalendar.get(Calendar.MONTH);
-
-        tvCurrentMonthYear.setText(months[month] + " " + year);
-    }
-
-    private void updateSelectedDateDisplay() {
-        String[] months = {"January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"};
-        int year = selectedCalendar.get(Calendar.YEAR);
-        int month = selectedCalendar.get(Calendar.MONTH);
-        int day = selectedCalendar.get(Calendar.DAY_OF_MONTH);
-
-        tvSelectedDate.setText("Selected: " + months[month] + " " + day + ", " + year);
-    }
-
-    private void setupColorPicker() {
-        colorContainer.removeAllViews();
-
-        for (int i = 0; i < colors.length; i++) {
-            final int color = colors[i];
-
-            // Create container for color circle
-            LinearLayout container = new LinearLayout(this);
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(dpToPx(48), dpToPx(48));
-            params.setMargins(dpToPx(8), 0, dpToPx(8), 0);
-            container.setLayoutParams(params);
-            container.setGravity(Gravity.CENTER);
-            container.setBackgroundResource(android.R.drawable.btn_default_small);
-
-            // Create color circle
-            View colorCircle = new View(this);
-            LinearLayout.LayoutParams circleParams = new LinearLayout.LayoutParams(dpToPx(36), dpToPx(36));
-            colorCircle.setLayoutParams(circleParams);
-            colorCircle.setBackgroundColor(color);
-
-            // Set initial selection (Green selected by default)
-            if (i == 3) {
-                container.setBackgroundResource(android.R.drawable.alert_dark_frame);
-                selectedColor = color;
-            }
-
-            final int position = i;
-            container.setOnClickListener(v -> {
-                // Reset all color borders
-                for (int j = 0; j < colorContainer.getChildCount(); j++) {
-                    View child = colorContainer.getChildAt(j);
-                    child.setBackgroundResource(android.R.drawable.btn_default_small);
-                }
-
-                // Set selected color border
-                container.setBackgroundResource(android.R.drawable.alert_dark_frame);
-                selectedColor = colors[position];
-
-                Toast.makeText(MainActivity6.this, "Color selected", Toast.LENGTH_SHORT).show();
-            });
-
-            container.addView(colorCircle);
-            colorContainer.addView(container);
-        }
-    }
-
-    private void setupTimePickers() {
-        // Set default times
-        etStartTime.setText("15:00");
-        etEndTime.setText("22:00");
-
-        etStartTime.setFocusable(false);
-        etEndTime.setFocusable(false);
-        etStartTime.setClickable(true);
-        etEndTime.setClickable(true);
-
-        etStartTime.setOnClickListener(v -> showTimePicker(etStartTime, "15:00"));
-        etEndTime.setOnClickListener(v -> showTimePicker(etEndTime, "22:00"));
-    }
-
-    private void showTimePicker(final EditText editText, String defaultTime) {
-        String currentTime = editText.getText().toString();
-        int hour, minute;
-
-        if (!currentTime.isEmpty()) {
-            String[] timeParts = currentTime.split(":");
-            hour = Integer.parseInt(timeParts[0]);
-            minute = Integer.parseInt(timeParts[1]);
-        } else {
-            String[] defaultParts = defaultTime.split(":");
-            hour = Integer.parseInt(defaultParts[0]);
-            minute = Integer.parseInt(defaultParts[1]);
-        }
-
-        TimePickerDialog timePicker = new TimePickerDialog(this, (view, hourOfDay, minute1) -> {
-            String time = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute1);
-            editText.setText(time);
-        }, hour, minute, true);
-
-        timePicker.setTitle("Select Time");
-        timePicker.show();
-    }
-
-    private void setupSaveButton() {
-        btnSaveTask.setOnClickListener(v -> saveTask());
-    }
-
     private void saveTask() {
         String taskName = etTaskName.getText().toString().trim();
         String startTime = etStartTime.getText().toString().trim();
         String endTime = etEndTime.getText().toString().trim();
 
-        // Validation
+        // Validasi input menggunakan resource string
         if (taskName.isEmpty()) {
-            showError(etTaskName, "Please enter task name");
+            Toast.makeText(this, R.string.please_enter_task, Toast.LENGTH_SHORT).show();
+            etTaskName.requestFocus();
             return;
         }
 
         if (startTime.isEmpty()) {
-            showError(etStartTime, "Please select start time");
+            Toast.makeText(this, R.string.please_enter_start_time, Toast.LENGTH_SHORT).show();
+            etStartTime.requestFocus();
             return;
         }
 
         if (endTime.isEmpty()) {
-            showError(etEndTime, "Please select end time");
+            Toast.makeText(this, R.string.please_enter_end_time, Toast.LENGTH_SHORT).show();
+            etEndTime.requestFocus();
             return;
         }
 
-        // Save task logic
-        String selectedDateStr = tvSelectedDate.getText().toString().replace("Selected: ", "");
+        // Validasi time format
+        if (!isValidTime(startTime) || !isValidTime(endTime)) {
+            Toast.makeText(this, R.string.please_enter_valid_time, Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        // Create task object
-        Task newTask = new Task(taskName, selectedDateStr, startTime, endTime, selectedColor);
+        // Buat task baru dengan date yang dipilih
+        Task newTask = new Task(taskName, selectedDate, startTime, endTime, selectedColor);
 
-        // Save to SharedPreferences
-        saveTaskToStorage(newTask);
+        // Simpan ke SharedPreferences
+        List<Task> tasks = loadTasksFromStorage();
+        tasks.add(newTask);
 
-        String message = String.format("Task '%s' saved successfully!\nDate: %s\nTime: %s - %s",
-                taskName, selectedDateStr, startTime, endTime);
+        String tasksJson = gson.toJson(tasks);
+        sharedPreferences.edit().putString(TASKS_KEY, tasksJson).apply();
 
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        // Menggunakan resource string untuk toast success
+        Toast.makeText(this, R.string.task_saved_success, Toast.LENGTH_SHORT).show();
 
-        // Navigate back to MainActivity3 after save
-        new Handler().postDelayed(() -> {
-            Intent intent = new Intent(MainActivity6.this, MainActivity3.class);
-            intent.putExtra("newTaskAdded", true);
-            startActivity(intent);
-            finish();
-        }, 1500);
+        // Kembali ke MainActivity3
+        kembaliKeActivity3();
     }
 
-    private void showError(EditText editText, String message) {
-        editText.setError(message);
-        editText.requestFocus();
+    private boolean isValidTime(String time) {
+        return time.matches("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$");
     }
 
-    private void saveTaskToStorage(Task newTask) {
-        // Load existing tasks
-        List<Task> taskList = loadTasksFromStorage();
-
-        // Add new task
-        taskList.add(newTask);
-
-        // Save back to SharedPreferences
-        String tasksJson = gson.toJson(taskList);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(TASKS_KEY, tasksJson);
-        editor.apply();
-
-        Log.d("TASK_SAVE", "Task saved: " + newTask.getTaskName() +
-                " | Date: " + newTask.getDate() +
-                " | Time: " + newTask.getStartTime() + " - " + newTask.getEndTime() +
-                " | Total tasks: " + taskList.size());
+    private String getFormattedDate(Calendar calendar) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.getDefault());
+        return dateFormat.format(calendar.getTime());
     }
 
     private List<Task> loadTasksFromStorage() {
@@ -322,9 +291,14 @@ public class MainActivity6 extends AppCompatActivity {
             return new ArrayList<>();
         }
 
-        Type type = new TypeToken<List<Task>>(){}.getType();
-        List<Task> taskList = gson.fromJson(tasksJson, type);
-        return taskList != null ? taskList : new ArrayList<>();
+        try {
+            Type type = new TypeToken<List<Task>>(){}.getType();
+            List<Task> taskList = gson.fromJson(tasksJson, type);
+            return taskList != null ? taskList : new ArrayList<>();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     private void kembaliKeActivity3() {
@@ -337,5 +311,36 @@ public class MainActivity6 extends AppCompatActivity {
     private int dpToPx(int dp) {
         float density = getResources().getDisplayMetrics().density;
         return Math.round(dp * density);
+    }
+
+    // Model class untuk calendar day
+    public static class CalendarDay {
+        private String dayName;
+        private String dateNumber;
+        private String fullDate;
+        private boolean isSelected;
+
+        public CalendarDay(String dayName, String dateNumber, String fullDate, boolean isSelected) {
+            this.dayName = dayName;
+            this.dateNumber = dateNumber;
+            this.fullDate = fullDate;
+            this.isSelected = isSelected;
+        }
+
+        public String getDayName() {
+            return dayName;
+        }
+
+        public String getDateNumber() {
+            return dateNumber;
+        }
+
+        public String getFullDate() {
+            return fullDate;
+        }
+
+        public boolean isSelected() {
+            return isSelected;
+        }
     }
 }

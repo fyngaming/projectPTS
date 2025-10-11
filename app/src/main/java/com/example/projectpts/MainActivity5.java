@@ -2,296 +2,308 @@ package com.example.projectpts;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.activity.OnBackPressedCallback;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MainActivity5 extends AppCompatActivity {
 
     private LinearLayout tasksContainer;
     private SharedPreferences sharedPreferences;
     private Gson gson;
-    private List<Catatan> catatanList = new ArrayList<>();
+    private static final String TAG = "MainActivity5";
+
+    private static final String PREFS_NAME = "TaskPrefs";
+    private static final String TASKS_KEY = "tasks";
+    private static final String COMPLETED_TASKS_KEY = "completed_tasks";
+
+    private Set<String> completedTasks;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main5);
 
-        // Inisialisasi SharedPreferences dan Gson
-        sharedPreferences = getSharedPreferences("notes_prefs", MODE_PRIVATE);
+        // Initialize SharedPreferences dan Gson
+        sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         gson = new Gson();
+
+        // Load completed tasks
+        completedTasks = sharedPreferences.getStringSet(COMPLETED_TASKS_KEY, new HashSet<>());
 
         initViews();
         setupBackButton();
-        loadCatatanFromStorage();
         setupFooterNavigation();
+        loadAndDisplayTasks();
     }
 
     private void initViews() {
         tasksContainer = findViewById(R.id.tasksContainer);
-
-        // Setup back button
-        ImageButton backButton = findViewById(R.id.backButton);
-        if (backButton != null) {
-            backButton.setOnClickListener(v -> kembaliKeActivity3());
-        }
     }
 
     private void setupBackButton() {
-        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                kembaliKeActivity3();
-            }
+        ImageButton backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> {
+            kembaliKeMainActivity3();
         });
     }
 
-    private void loadCatatanFromStorage() {
-        catatanList.clear();
-        catatanList = loadCatatanList();
+    private void setupFooterNavigation() {
+        // Logo Home di footer - kembali ke MainActivity3
+        findViewById(R.id.footer_home).setOnClickListener(v -> {
+            kembaliKeMainActivity3();
+        });
 
-        if (catatanList.isEmpty()) {
-            // Jika tidak ada catatan, tampilkan sample data
-            loadSampleTasks();
+        // Logo Add di footer - pergi ke MainActivity6 (Add Task)
+        findViewById(R.id.footer_add).setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity5.this, MainActivity6.class);
+            startActivity(intent);
+        });
+
+        // Logo Notes di footer - pergi ke MainActivity7 (INBOX/REMINDER) - YANG DIUBAH
+        findViewById(R.id.footer_notes).setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity5.this, MainActivity7.class);
+            startActivity(intent);
+        });
+    }
+
+    private void kembaliKeMainActivity3() {
+        Intent intent = new Intent(MainActivity5.this, MainActivity3.class);
+        startActivity(intent);
+        finish(); // Tutup activity ini agar tidak menumpuk di back stack
+    }
+
+    private void loadAndDisplayTasks() {
+        List<Task> allTasks = loadTasksFromStorage();
+
+        Log.d(TAG, "Loading tasks for display. Total: " + allTasks.size());
+
+        if (allTasks.isEmpty()) {
+            showEmptyState();
         } else {
-            // Tampilkan catatan dari storage
-            displayTasks();
+            displayTasks(allTasks);
         }
     }
 
-    private List<Catatan> loadCatatanList() {
-        String catatanJson = sharedPreferences.getString("catatan_list", "");
-        if (catatanJson.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        Type type = new TypeToken<List<Catatan>>(){}.getType();
-        List<Catatan> catatanList = gson.fromJson(catatanJson, type);
-        return catatanList != null ? catatanList : new ArrayList<>();
-    }
-
-    private void saveCatatanList(List<Catatan> catatanList) {
-        String catatanJson = gson.toJson(catatanList);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("catatan_list", catatanJson);
-        editor.apply();
-    }
-
-    private void loadSampleTasks() {
-        // Data contoh tasks (hanya digunakan jika tidak ada data)
-        catatanList.add(new Catatan("Mengerjakan Project Android", "Buat aplikasi manajemen tugas dengan fitur CRUD dan database"));
-        catatanList.add(new Catatan("Belajar Pemrograman Kotlin", "Mempelajari dasar-dasar pemrograman Kotlin dan Android Development"));
-
-        // Tampilkan tasks
-        displayTasks();
-    }
-
-    private void displayTasks() {
+    private void displayTasks(List<Task> tasks) {
         tasksContainer.removeAllViews();
 
-        if (catatanList.isEmpty()) {
-            // Tampilkan pesan jika tidak ada catatan
-            TextView emptyText = new TextView(this);
-            emptyText.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-            ));
-            emptyText.setText("Belum ada catatan. Silakan tambah catatan baru!");
-            emptyText.setTextColor(0xFF666666);
-            emptyText.setTextSize(14);
-            emptyText.setPadding(dpToPx(16), dpToPx(32), dpToPx(16), dpToPx(32));
-            emptyText.setGravity(android.view.Gravity.CENTER);
-            tasksContainer.addView(emptyText);
-            return;
+        for (Task task : tasks) {
+            addTaskToView(task);
         }
 
-        for (int i = 0; i < catatanList.size(); i++) {
-            Catatan catatan = catatanList.get(i);
-            addTaskItem(catatan, i);
-        }
+        String displayMessage = getString(R.string.displaying_tasks, tasks.size());
+        Toast.makeText(this, displayMessage, Toast.LENGTH_SHORT).show();
     }
 
-    private void addTaskItem(Catatan catatan, int position) {
-        // Create main task item container
-        LinearLayout taskItem = new LinearLayout(this);
-        LinearLayout.LayoutParams taskParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        taskParams.setMargins(dpToPx(8), dpToPx(4), dpToPx(8), dpToPx(4));
-        taskItem.setLayoutParams(taskParams);
-        taskItem.setOrientation(LinearLayout.HORIZONTAL);
-        taskItem.setBackgroundResource(R.drawable.notes_edittext_background);
-        taskItem.setPadding(dpToPx(16), dpToPx(12), dpToPx(16), dpToPx(12));
+    private void addTaskToView(Task task) {
+        // Inflate custom task item layout
+        View taskItem = LayoutInflater.from(this).inflate(R.layout.task_item_layout, tasksContainer, false);
 
-        // Checkbox
-        ImageView btnCheckbox = new ImageView(this);
-        LinearLayout.LayoutParams checkboxParams = new LinearLayout.LayoutParams(dpToPx(24), dpToPx(24));
-        checkboxParams.setMargins(0, 0, dpToPx(12), 0);
-        btnCheckbox.setLayoutParams(checkboxParams);
+        // Get views
+        RelativeLayout checkCircle = taskItem.findViewById(R.id.checkCircle);
+        ImageView checkMark = taskItem.findViewById(R.id.checkMark);
+        TextView tvTaskName = taskItem.findViewById(R.id.tvTaskName);
+        TextView tvTaskDate = taskItem.findViewById(R.id.tvTaskDate);
+        TextView tvTaskTime = taskItem.findViewById(R.id.tvTaskTime);
+        View colorIndicator = taskItem.findViewById(R.id.colorIndicator);
+        LinearLayout taskItemLayout = taskItem.findViewById(R.id.taskItemLayout);
 
-        // Coba gunakan custom drawable, jika tidak ada gunakan system default
-        try {
-            btnCheckbox.setBackgroundResource(R.drawable.checkbox_circle);
-        } catch (Exception e) {
-            btnCheckbox.setBackgroundResource(android.R.drawable.btn_default_small);
-        }
+        // Set task data
+        tvTaskName.setText(task.getTaskName());
 
-        // Set initial checkbox state
-        boolean isCompleted = catatan.isCompleted();
+        String dateText = getString(R.string.task_date, task.getDate());
+        tvTaskDate.setText(dateText);
 
-        // Coba gunakan custom ic_check, jika tidak ada gunakan system icon
-        try {
-            btnCheckbox.setImageResource(isCompleted ? R.drawable.ic_check : 0);
-        } catch (Exception e) {
-            btnCheckbox.setImageResource(isCompleted ? android.R.drawable.checkbox_on_background : 0);
-        }
-        btnCheckbox.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        String timeText = getString(R.string.task_time, task.getStartTime(), task.getEndTime());
+        tvTaskTime.setText(timeText);
 
-        // Text container
-        LinearLayout textContainer = new LinearLayout(this);
-        LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(
-                0,
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                1.0f
-        );
-        textContainer.setLayoutParams(textParams);
-        textContainer.setOrientation(LinearLayout.VERTICAL);
+        // Set task color
+        colorIndicator.setBackgroundColor(task.getColor());
 
-        // Task Name
-        TextView tvTaskName = new TextView(this);
-        LinearLayout.LayoutParams nameParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        tvTaskName.setLayoutParams(nameParams);
-        tvTaskName.setText(catatan.getJudul());
-        tvTaskName.setTextSize(16);
-        tvTaskName.setTextColor(isCompleted ? 0xFF888888 : 0xFF2C3E50);
-        tvTaskName.setTypeface(null, Typeface.BOLD);
-        if (isCompleted) {
-            tvTaskName.setPaintFlags(tvTaskName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-        }
+        // Check if task is completed
+        boolean isCompleted = completedTasks.contains(getTaskIdentifier(task));
+        updateTaskAppearance(isCompleted, tvTaskName, tvTaskDate, tvTaskTime, checkCircle, checkMark);
 
-        // Task Content
-        TextView tvTaskContent = new TextView(this);
-        LinearLayout.LayoutParams contentParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        contentParams.setMargins(0, dpToPx(2), 0, 0);
-        tvTaskContent.setLayoutParams(contentParams);
-        tvTaskContent.setText(catatan.getIsi());
-        tvTaskContent.setTextSize(12);
-        tvTaskContent.setTextColor(isCompleted ? 0xFFAAAAAA : 0xFF666666);
-        tvTaskContent.setMaxLines(2);
-        if (isCompleted) {
-            tvTaskContent.setPaintFlags(tvTaskContent.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-        }
+        // Set click listener for checkbox
+        checkCircle.setOnClickListener(v -> {
+            boolean currentlyCompleted = completedTasks.contains(getTaskIdentifier(task));
+            toggleTaskCompletion(task, !currentlyCompleted, tvTaskName, tvTaskDate, tvTaskTime, checkCircle, checkMark);
+        });
 
-        // Add views to containers
-        textContainer.addView(tvTaskName);
-        textContainer.addView(tvTaskContent);
-
-        taskItem.addView(btnCheckbox);
-        taskItem.addView(textContainer);
-
-        // Add click listener for checkbox
-        btnCheckbox.setOnClickListener(v ->
-                toggleTaskCompletion(catatan, position, btnCheckbox, tvTaskName, tvTaskContent)
-        );
+        // Set click listener for entire task item
+        taskItemLayout.setOnClickListener(v -> {
+            boolean currentlyCompleted = completedTasks.contains(getTaskIdentifier(task));
+            toggleTaskCompletion(task, !currentlyCompleted, tvTaskName, tvTaskDate, tvTaskTime, checkCircle, checkMark);
+        });
 
         // Add task item to container
         tasksContainer.addView(taskItem);
     }
 
-    private void toggleTaskCompletion(Catatan catatan, int position, ImageView btnCheckbox, TextView tvTaskName, TextView tvTaskContent) {
-        boolean newCompletedState = !catatan.isCompleted();
+    private void toggleTaskCompletion(Task task, boolean completed,
+                                      TextView tvTaskName, TextView tvTaskDate, TextView tvTaskTime,
+                                      RelativeLayout checkCircle, ImageView checkMark) {
 
-        // Update status completed
-        catatan.setCompleted(newCompletedState);
+        String taskIdentifier = getTaskIdentifier(task);
 
-        // Update SharedPreferences
-        saveCatatanList(catatanList);
-
-        // Update UI
-        if (newCompletedState) {
+        if (completed) {
             // Mark as completed
-            try {
-                btnCheckbox.setImageResource(R.drawable.ic_check);
-            } catch (Exception e) {
-                btnCheckbox.setImageResource(android.R.drawable.checkbox_on_background);
-            }
-            tvTaskName.setTextColor(0xFF888888);
-            tvTaskContent.setTextColor(0xFFAAAAAA);
-            tvTaskName.setPaintFlags(tvTaskName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-            tvTaskContent.setPaintFlags(tvTaskContent.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-            Toast.makeText(this, "Task completed!", Toast.LENGTH_SHORT).show();
+            completedTasks.add(taskIdentifier);
+            playCheckmarkAnimation(checkCircle, checkMark);
+            applyTextAnimation(tvTaskName); // Animasi teks saat dicentang
         } else {
-            // Mark as not completed
-            btnCheckbox.setImageResource(0);
-            tvTaskName.setTextColor(0xFF2C3E50);
-            tvTaskContent.setTextColor(0xFF666666);
+            // Mark as incomplete
+            completedTasks.remove(taskIdentifier);
+            playUncheckAnimation(checkCircle, checkMark);
+            removeTextAnimation(tvTaskName); // Hapus animasi teks saat unchecked
+        }
+
+        // Save completed tasks
+        saveCompletedTasks();
+
+        // Update appearance
+        updateTaskAppearance(completed, tvTaskName, tvTaskDate, tvTaskTime, checkCircle, checkMark);
+    }
+
+    private void updateTaskAppearance(boolean isCompleted,
+                                      TextView tvTaskName, TextView tvTaskDate, TextView tvTaskTime,
+                                      RelativeLayout checkCircle, ImageView checkMark) {
+
+        if (isCompleted) {
+            // Completed state
+            tvTaskName.setPaintFlags(tvTaskName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            tvTaskName.setTextColor(Color.parseColor("#888888"));
+            tvTaskDate.setTextColor(Color.parseColor("#AAAAAA"));
+            tvTaskTime.setTextColor(Color.parseColor("#AAAAAA"));
+
+            checkCircle.setBackgroundResource(R.drawable.check_circle_filled);
+            checkMark.setVisibility(View.VISIBLE);
+
+            // Add fade animation
+            Animation fadeAnimation = AnimationUtils.loadAnimation(this, android.R.anim.fade_in);
+            tvTaskName.startAnimation(fadeAnimation);
+
+        } else {
+            // Incomplete state
             tvTaskName.setPaintFlags(tvTaskName.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
-            tvTaskContent.setPaintFlags(tvTaskContent.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
-            Toast.makeText(this, "Task reopened!", Toast.LENGTH_SHORT).show();
+            tvTaskName.setTextColor(Color.parseColor("#2C3E50"));
+            tvTaskDate.setTextColor(Color.parseColor("#666666"));
+            tvTaskTime.setTextColor(Color.parseColor("#666666"));
+
+            checkCircle.setBackgroundResource(R.drawable.check_circle_background);
+            checkMark.setVisibility(View.INVISIBLE);
         }
     }
 
-    private void setupFooterNavigation() {
+    private void playCheckmarkAnimation(RelativeLayout checkCircle, ImageView checkMark) {
+        // Scale animation for circle
+        Animation scaleAnimation = AnimationUtils.loadAnimation(this, R.anim.check_scale);
+        checkCircle.startAnimation(scaleAnimation);
+
+        // Fade in animation for check mark
+        Animation fadeInAnimation = AnimationUtils.loadAnimation(this, android.R.anim.fade_in);
+        fadeInAnimation.setStartOffset(100);
+        checkMark.startAnimation(fadeInAnimation);
+
+        // Bounce animation
+        Animation bounceAnimation = AnimationUtils.loadAnimation(this, R.anim.bounce);
+        checkMark.startAnimation(bounceAnimation);
+    }
+
+    private void playUncheckAnimation(RelativeLayout checkCircle, ImageView checkMark) {
+        // Scale down animation
+        Animation scaleAnimation = AnimationUtils.loadAnimation(this, R.anim.uncheck_scale);
+        checkCircle.startAnimation(scaleAnimation);
+
+        // Fade out animation for check mark
+        Animation fadeOutAnimation = AnimationUtils.loadAnimation(this, android.R.anim.fade_out);
+        checkMark.startAnimation(fadeOutAnimation);
+    }
+
+    private void applyTextAnimation(TextView textView) {
+        // Animasi fade dan scale untuk teks yang dicentang
+        Animation textAnimation = AnimationUtils.loadAnimation(this, R.anim.text_completed_animation);
+        textView.startAnimation(textAnimation);
+    }
+
+    private void removeTextAnimation(TextView textView) {
+        // Hapus animasi saat unchecked
+        textView.clearAnimation();
+    }
+
+    private String getTaskIdentifier(Task task) {
+        return task.getTaskName() + "|" + task.getDate() + "|" + task.getStartTime() + "|" + task.getEndTime();
+    }
+
+    private void saveCompletedTasks() {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putStringSet(COMPLETED_TASKS_KEY, completedTasks);
+        editor.apply();
+    }
+
+    private void showEmptyState() {
+        tasksContainer.removeAllViews();
+
+        TextView tvEmpty = new TextView(this);
+        tvEmpty.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        ));
+        tvEmpty.setText(getString(R.string.no_tasks_available));
+        tvEmpty.setTextColor(Color.GRAY);
+        tvEmpty.setTextSize(16);
+        tvEmpty.setTextAlignment(TextView.TEXT_ALIGNMENT_CENTER);
+        tvEmpty.setPadding(0, dpToPx(25), 0, dpToPx(25));
+
+        tasksContainer.addView(tvEmpty);
+
+        Toast.makeText(this, getString(R.string.no_tasks_found), Toast.LENGTH_SHORT).show();
+    }
+
+    private List<Task> loadTasksFromStorage() {
+        String tasksJson = sharedPreferences.getString(TASKS_KEY, "");
+        if (tasksJson.isEmpty()) {
+            return new ArrayList<>();
+        }
+
         try {
-            // Footer Home - Navigate to MainActivity3
-            ImageView footerHome = findViewById(R.id.footer_home);
-            if (footerHome != null) {
-                footerHome.setOnClickListener(v -> {
-                    Intent intent = new Intent(MainActivity5.this, MainActivity3.class);
-                    startActivity(intent);
-                    finish();
-                });
-            }
-
-            // Footer Add - Navigate to MainActivity4 (Add Notes)
-            ImageView footerAdd = findViewById(R.id.footer_add);
-            if (footerAdd != null) {
-                footerAdd.setOnClickListener(v -> {
-                    Intent intent = new Intent(MainActivity5.this, MainActivity4.class);
-                    startActivity(intent);
-                    finish();
-                });
-            }
-
-            // Footer Notes - Navigate to MainActivity4
-            ImageView footerNotes = findViewById(R.id.footer_notes);
-            if (footerNotes != null) {
-                footerNotes.setOnClickListener(v -> {
-                    Intent intent = new Intent(MainActivity5.this, MainActivity4.class);
-                    startActivity(intent);
-                    finish();
-                });
-            }
-
+            Type type = new TypeToken<List<Task>>(){}.getType();
+            List<Task> taskList = gson.fromJson(tasksJson, type);
+            return taskList != null ? taskList : new ArrayList<>();
         } catch (Exception e) {
-            Toast.makeText(this, "Error setting up footer: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Error loading tasks from storage", e);
+            return new ArrayList<>();
         }
     }
 
-    private void kembaliKeActivity3() {
-        Intent intent = new Intent(MainActivity5.this, MainActivity3.class);
-        startActivity(intent);
-        finish();
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh data ketika kembali ke activity ini
+        loadAndDisplayTasks();
     }
 
     // Helper method untuk konversi dp ke px

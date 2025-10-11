@@ -35,7 +35,7 @@ public class MonthYearAdapter extends RecyclerView.Adapter<MonthYearAdapter.View
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         MonthYearItem item = itemList.get(position);
-        holder.bind(item, listener, position);
+        holder.bind(item, listener, position, itemList);
     }
 
     @Override
@@ -43,7 +43,8 @@ public class MonthYearAdapter extends RecyclerView.Adapter<MonthYearAdapter.View
         return itemList.size();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    // HAPUS "static" dari class ViewHolder
+    class ViewHolder extends RecyclerView.ViewHolder {
         TextView textView;
 
         ViewHolder(View itemView) {
@@ -51,7 +52,7 @@ public class MonthYearAdapter extends RecyclerView.Adapter<MonthYearAdapter.View
             textView = itemView.findViewById(android.R.id.text1);
         }
 
-        void bind(MonthYearItem item, OnItemClickListener listener, int position) {
+        void bind(MonthYearItem item, OnItemClickListener listener, int position, List<MonthYearItem> itemList) {
             textView.setText(item.getLabel());
 
             // Set background based on selection
@@ -68,6 +69,8 @@ public class MonthYearAdapter extends RecyclerView.Adapter<MonthYearAdapter.View
                 }
                 // Select current item
                 item.setSelected(true);
+
+                // Panggil notifyDataSetChanged() dari adapter, bukan dari ViewHolder
                 notifyDataSetChanged();
 
                 listener.onItemClick(position, item);

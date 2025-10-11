@@ -4,7 +4,6 @@
     <!-- Main Title -->
     <string name="to_do_list">To Do List</string>
 
-
     <!-- Button Texts -->
     <string name="add_task">ADD TASK</string>
     <string name="view_task">VIEW TASK</string>
@@ -25,7 +24,7 @@
     <string name="add_button_desc">Navigate to add task screen</string>
     <string name="notes_button_desc">Navigate to notes screen</string>
 
-    <!-- Add these to your existing strings.xml -->
+    <!-- Notes Section -->
     <string name="notes_title">Notes</string>
     <string name="note_title">Judul Catatan</string>
     <string name="note_title_hint">Tambahkan Judul...</string>
@@ -35,5 +34,28 @@
     <string name="home">Home</string>
     <string name="add">Add</string>
 
+    <!-- String untuk MainActivity5 -->
+    <string name="displaying_tasks">Displaying %d tasks</string>
+    <string name="task_date">Date: %s</string>
+    <string name="task_time">Time: %s - %s</string>
+    <string name="no_tasks_available">No tasks available.\nAdd a task first!</string>
+    <string name="no_tasks_found">No tasks found</string>
 
+    <!-- String untuk activity lain -->
+    <string name="add_task_clicked">ADD TASK Clicked</string>
+    <string name="view_task_clicked">VIEW TASK Clicked</string>
+    <string name="notes_clicked">NOTES Clicked</string>
+    <string name="home_clicked">Home Clicked</string>
+    <string name="add_clicked">Add Clicked</string>
+    <string name="inbox_clicked">Inbox Clicked</string>
+    <string name="task_saved_success">Task saved successfully!</string>
+    <string name="please_enter_task">Please enter a task name</string>
+    <string name="no_tasks_available_message">No tasks available. Please add a task first.</string>
+
+    <string name="selected_date_format">Selected: %s</string>
+
+    <!-- String tambahan untuk validasi di MainActivity6 -->
+    <string name="please_enter_start_time">Please enter start time</string>
+    <string name="please_enter_end_time">Please enter end time</string>
+    <string name="please_enter_valid_time">Please enter valid time format (HH:mm)</string>
 </resources>

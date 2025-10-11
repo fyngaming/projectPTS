@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -77,8 +78,8 @@ public class InboxAdapter extends RecyclerView.Adapter<InboxAdapter.TaskViewHold
         public void bind(Task task) {
             if (task == null) return;
 
-            // Set date group
-            String dateGroup = getDateGroup(task.getTimestamp());
+            // Set date group - PERBAIKAN: gunakan task date bukan timestamp
+            String dateGroup = getDateGroup(task.getDate());
             tvDateGroup.setText(dateGroup);
 
             // Set message
@@ -86,10 +87,10 @@ public class InboxAdapter extends RecyclerView.Adapter<InboxAdapter.TaskViewHold
             tvMessage.setText(message);
 
             // Set task details
-            String details = String.format("_%s (%s, %s)_",
+            String details = String.format("%s (%s - %s)",
                     task.getTaskName(),
-                    formatDateForDisplay(task.getDate()),
-                    task.getStartTime());
+                    task.getStartTime(),
+                    task.getEndTime());
             tvTaskDetails.setText(details);
 
             // Set color indicator
@@ -100,23 +101,44 @@ public class InboxAdapter extends RecyclerView.Adapter<InboxAdapter.TaskViewHold
             }
         }
 
-        private String getDateGroup(long timestamp) {
+        private String getDateGroup(String taskDate) {
             try {
-                long now = System.currentTimeMillis();
-                long oneDay = 24 * 60 * 60 * 1000;
-                SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+                if (taskDate == null || taskDate.isEmpty()) {
+                    return "Unknown";
+                }
 
-                if (format.format(new Date(now)).equals(format.format(new Date(timestamp)))) {
+                // Parse task date string to determine if it's today, yesterday, etc.
+                SimpleDateFormat taskDateFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.getDefault());
+                Date taskDateObj = taskDateFormat.parse(taskDate);
+
+                if (taskDateObj == null) {
+                    return taskDate; // Return original date if parsing fails
+                }
+
+                Calendar taskCal = Calendar.getInstance();
+                taskCal.setTime(taskDateObj);
+
+                Calendar today = Calendar.getInstance();
+                Calendar yesterday = Calendar.getInstance();
+                yesterday.add(Calendar.DAY_OF_YEAR, -1);
+
+                if (isSameDay(taskCal, today)) {
                     return "Today";
-                } else if (format.format(new Date(now - oneDay)).equals(format.format(new Date(timestamp)))) {
+                } else if (isSameDay(taskCal, yesterday)) {
                     return "Yesterday";
                 } else {
                     SimpleDateFormat displayFormat = new SimpleDateFormat("dd/MM", Locale.getDefault());
-                    return displayFormat.format(new Date(timestamp));
+                    return displayFormat.format(taskDateObj);
                 }
             } catch (Exception e) {
-                return "Unknown";
+                return taskDate != null ? taskDate : "Unknown";
             }
+        }
+
+        private boolean isSameDay(Calendar cal1, Calendar cal2) {
+            return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+                    cal1.get(Calendar.MONTH) == cal2.get(Calendar.MONTH) &&
+                    cal1.get(Calendar.DAY_OF_MONTH) == cal2.get(Calendar.DAY_OF_MONTH);
         }
 
         private String getMessageForTask(String taskName) {
@@ -131,19 +153,6 @@ public class InboxAdapter extends RecyclerView.Adapter<InboxAdapter.TaskViewHold
             };
             int index = Math.abs(taskName.hashCode()) % messages.length;
             return messages[index];
-        }
-
-        private String formatDateForDisplay(String date) {
-            if (date == null) return "Unknown";
-
-            try {
-                if (date.contains("March")) {
-                    return date.replace("March ", "").replace(", 2025", "/03");
-                }
-                return date;
-            } catch (Exception e) {
-                return date;
-            }
         }
     }
 }
