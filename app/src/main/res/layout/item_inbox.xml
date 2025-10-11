@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/item_inbox_background"
+    android:layout_margin="8dp">
+
+    <!-- Date Group (Today, Yesterday, etc) -->
+    <TextView
+        android:id="@+id/tvDateGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Today"
+        android:textColor="#2C3E50"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Message -->
+    <TextView
+        android:id="@+id/tvMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Don't forget your schedule!! 🌟🎵"
+        android:textColor="#2C3E50"
+        android:textSize="14sp"
+        android:layout_marginBottom="4dp" />
+
+    <!-- Task Details dengan Color Indicator -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <!-- Color Indicator -->
+        <View
+            android:id="@+id/colorIndicator"
+            android:layout_width="4dp"
+            android:layout_height="20dp"
+            android:layout_marginEnd="8dp"
+            android:background="#4CAF50" />
+
+        <!-- Task Details -->
+        <TextView
+            android:id="@+id/tvTaskDetails"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="_Senin! (26/12, 10.00 AM)_"
+            android:textColor="#666666"
+            android:textSize="12sp"
+            android:textStyle="italic" />
+
+    </LinearLayout>
+
+</LinearLayout>

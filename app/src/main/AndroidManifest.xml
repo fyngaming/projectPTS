@@ -12,27 +12,43 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ProjectPTS"
         tools:targetApi="31">
-        <activity
-            android:name=".MainActivity5"
-            android:exported="false" />
-        <activity
-            android:name=".MainActivity4"
-            android:exported="false" /> <!-- Main Activity (Login Screen) -->
+
+        <!-- LAUNCHER Activity (harus pertama) -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- Main Activity 2 (Welcome Screen) -->
+        </activity>
+
+        <!-- Secondary Activities -->
         <activity
             android:name=".MainActivity2"
-            android:exported="false" /> <!-- Main Activity 3 (To Do List) -->
+            android:exported="false" />
+
         <activity
             android:name=".MainActivity3"
             android:exported="false" />
+
+        <activity
+            android:name=".MainActivity4"
+            android:exported="false" />
+
+        <activity
+            android:name=".MainActivity5"
+            android:exported="false" />
+
+        <!-- ACTIVITY YANG LUPA DITAMBAHKAN -->
+        <activity
+            android:name=".MainActivity6"
+            android:exported="false" />
+
+        <activity
+            android:name=".MainActivity7"
+            android:exported="false" />
+
     </application>
 
 </manifest>
