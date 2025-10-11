@@ -64,7 +64,7 @@
                 android:textColor="#666666"
                 android:textSize="14sp" />
 
-            <!-- Calendar Section - DIUBAH -->
+            <!-- Calendar Section -->
             <LinearLayout
                 android:id="@+id/calendarSection"
                 android:layout_width="match_parent"
@@ -75,7 +75,7 @@
                 android:background="@drawable/calender_background"
                 android:padding="16dp">
 
-                <!-- Month Navigation -->
+                <!-- Month Navigation - YANG DIPERBAIKI -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -88,7 +88,8 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:src="@drawable/ic_arrow_back_black"
-                        android:background="?attr/selectableItemBackgroundBorderless" />
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Previous month" />
 
                     <TextView
                         android:id="@+id/tvCurrentMonthYear"
@@ -109,7 +110,8 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:src="@drawable/ic_arrow_forward_black"
-                        android:background="?attr/selectableItemBackgroundBorderless" />
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Next month" />
 
                 </LinearLayout>
 
@@ -213,7 +215,7 @@
 
             </LinearLayout>
 
-            <!-- Task Name Section -->
+            <!-- Sisa layout tetap sama... -->
             <LinearLayout
                 android:id="@+id/taskNameSection"
                 android:layout_width="match_parent"
@@ -344,9 +346,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center">
-
                     <!-- Color options will be added dynamically -->
-
                 </LinearLayout>
 
             </LinearLayout>

@@ -1,18 +1,14 @@
 package com.example.projectpts;
 
-import android.app.AlertDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -21,19 +17,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -44,12 +35,11 @@ public class MainActivity6 extends AppCompatActivity {
     private TextView tvCurrentMonthYear, tvSelectedDate;
     private Button btnSaveTask;
     private ImageButton btnPrevMonth, btnNextMonth;
-    private RecyclerView recyclerViewCalendar;
 
     private Calendar selectedCalendar;
     private Calendar currentCalendar;
     private int selectedColor = Color.parseColor("#4CAF50");
-    private DateAdapter dateAdapter;
+    private int selectedDate = -1;
 
     private SharedPreferences sharedPreferences;
     private Gson gson;
@@ -64,10 +54,6 @@ public class MainActivity6 extends AppCompatActivity {
             Color.parseColor("#2196F3"), // Blue
             Color.parseColor("#9C27B0"), // Purple
     };
-
-    // Date format
-    private SimpleDateFormat monthYearFormat = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,7 +71,6 @@ public class MainActivity6 extends AppCompatActivity {
         setupTimePickers();
         setupSaveButton();
         setupMonthNavigation();
-        setupSwipeGestures();
     }
 
     private void initViews() {
@@ -98,11 +83,6 @@ public class MainActivity6 extends AppCompatActivity {
         btnSaveTask = findViewById(R.id.btnSaveTask);
         btnPrevMonth = findViewById(R.id.btnPrevMonth);
         btnNextMonth = findViewById(R.id.btnNextMonth);
-        recyclerViewCalendar = findViewById(R.id.recyclerViewCalendar);
-
-        // Setup RecyclerView
-        recyclerViewCalendar.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        recyclerViewCalendar.setHasFixedSize(true);
 
         ImageButton backButton = findViewById(R.id.backButton);
         backButton.setOnClickListener(v -> kembaliKeActivity3());
@@ -110,10 +90,12 @@ public class MainActivity6 extends AppCompatActivity {
         // Initialize calendars
         selectedCalendar = Calendar.getInstance();
         currentCalendar = Calendar.getInstance();
+        currentCalendar.set(2025, Calendar.MARCH, 1); // Set to March 2025
 
-        // Set default selection to today
-        selectedCalendar.setTime(new Date());
-        currentCalendar.setTime(new Date());
+        // Set default selection
+        selectedDate = 15;
+        selectedCalendar.set(2025, Calendar.MARCH, 15);
+        updateSelectedDateDisplay();
     }
 
     private void setupBackButton() {
@@ -141,172 +123,42 @@ public class MainActivity6 extends AppCompatActivity {
         });
 
         // Month/Year picker
-        tvCurrentMonthYear.setOnClickListener(v -> showMonthYearPicker());
+        tvCurrentMonthYear.setOnClickListener(v -> showSimpleMonthYearPicker());
     }
 
-    private void setupSwipeGestures() {
-        final float[] startX = new float[1];
-
-        recyclerViewCalendar.setOnTouchListener((v, event) -> {
-            switch (event.getAction()) {
-                case android.view.MotionEvent.ACTION_DOWN:
-                    startX[0] = event.getX();
-                    break;
-                case android.view.MotionEvent.ACTION_UP:
-                    float endX = event.getX();
-                    float deltaX = endX - startX[0];
-
-                    // Minimum swipe distance
-                    if (Math.abs(deltaX) > 100) {
-                        if (deltaX > 0) {
-                            // Swipe right - previous month
-                            currentCalendar.add(Calendar.MONTH, -1);
-                        } else {
-                            // Swipe left - next month
-                            currentCalendar.add(Calendar.MONTH, 1);
-                        }
-                        updateCalendarDisplay();
-                    }
-                    break;
-            }
-            return false;
-        });
-    }
-
-    private void showMonthYearPicker() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select Month and Year");
-
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_month_year_picker, null);
-        builder.setView(dialogView);
-
-        RecyclerView rvMonths = dialogView.findViewById(R.id.rvMonths);
-        RecyclerView rvYears = dialogView.findViewById(R.id.rvYears);
-
-        setupMonthPicker(rvMonths);
-        setupYearPicker(rvYears);
-
-        builder.setPositiveButton("OK", (dialog, which) -> {
-            updateCalendarDisplay();
-        });
-
-        builder.setNegativeButton("Cancel", null);
-
-        builder.show();
-    }
-
-    private void setupMonthPicker(RecyclerView recyclerView) {
+    private void showSimpleMonthYearPicker() {
+        // Simple implementation without RecyclerView
         String[] months = {"January", "February", "March", "April", "May", "June",
                 "July", "August", "September", "October", "November", "December"};
 
-        List<MonthYearItem> monthList = new ArrayList<>();
-        for (int i = 0; i < months.length; i++) {
-            monthList.add(new MonthYearItem(months[i], i, false));
-        }
+        int currentYear = currentCalendar.get(Calendar.YEAR);
 
-        // Select current month
-        monthList.get(currentCalendar.get(Calendar.MONTH)).setSelected(true);
-
-        MonthYearAdapter adapter = new MonthYearAdapter(monthList, (position, item) -> {
-            currentCalendar.set(Calendar.MONTH, position);
-            updateMonthYearText();
-        });
-
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(adapter);
-    }
-
-    private void setupYearPicker(RecyclerView recyclerView) {
-        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-        List<MonthYearItem> yearList = new ArrayList<>();
-
-        // Show 10 years before and after current year
-        for (int i = currentYear - 5; i <= currentYear + 5; i++) {
-            yearList.add(new MonthYearItem(String.valueOf(i), i, false));
-        }
-
-        // Select current year
-        for (MonthYearItem item : yearList) {
-            if (item.getValue() == currentCalendar.get(Calendar.YEAR)) {
-                item.setSelected(true);
-                break;
-            }
-        }
-
-        MonthYearAdapter adapter = new MonthYearAdapter(yearList, (position, item) -> {
-            currentCalendar.set(Calendar.YEAR, item.getValue());
-            updateMonthYearText();
-        });
-
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(adapter);
+        String message = "Current: " + months[currentCalendar.get(Calendar.MONTH)] + " " + currentYear;
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     private void updateCalendarDisplay() {
         updateMonthYearText();
-        setupCalendarDates();
+        updateSelectedDateDisplay();
     }
 
     private void updateMonthYearText() {
-        tvCurrentMonthYear.setText(monthYearFormat.format(currentCalendar.getTime()));
-    }
+        String[] months = {"January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"};
+        int year = currentCalendar.get(Calendar.YEAR);
+        int month = currentCalendar.get(Calendar.MONTH);
 
-    private void setupCalendarDates() {
-        List<DateItem> dateList = generateDateList();
-        dateAdapter = new DateAdapter(dateList, this::onDateSelected);
-        recyclerViewCalendar.setAdapter(dateAdapter);
-
-        // Update selected date display
-        updateSelectedDateDisplay();
-    }
-
-    private List<DateItem> generateDateList() {
-        List<DateItem> dateList = new ArrayList<>();
-        Calendar tempCalendar = (Calendar) currentCalendar.clone();
-
-        // Set to first day of month
-        tempCalendar.set(Calendar.DAY_OF_MONTH, 1);
-
-        // Add some days from previous month
-        int firstDayOfWeek = tempCalendar.get(Calendar.DAY_OF_WEEK);
-        tempCalendar.add(Calendar.DAY_OF_MONTH, -firstDayOfWeek + 1);
-
-        // Generate 42 days (6 weeks)
-        for (int i = 0; i < 42; i++) {
-            boolean isCurrentMonth = tempCalendar.get(Calendar.MONTH) == currentCalendar.get(Calendar.MONTH);
-            boolean isSelected = isSameDay(tempCalendar, selectedCalendar);
-            boolean isToday = isSameDay(tempCalendar, Calendar.getInstance());
-
-            dateList.add(new DateItem(
-                    tempCalendar.getTime(),
-                    tempCalendar.get(Calendar.DAY_OF_MONTH),
-                    isCurrentMonth,
-                    isSelected,
-                    isToday
-            ));
-
-            tempCalendar.add(Calendar.DAY_OF_MONTH, 1);
-        }
-
-        return dateList;
-    }
-
-    private void onDateSelected(DateItem dateItem) {
-        selectedCalendar.setTime(dateItem.getDate());
-        updateSelectedDateDisplay();
-        setupCalendarDates(); // Refresh to update selection
-
-        Toast.makeText(this, "Selected: " + dateFormat.format(dateItem.getDate()), Toast.LENGTH_SHORT).show();
+        tvCurrentMonthYear.setText(months[month] + " " + year);
     }
 
     private void updateSelectedDateDisplay() {
-        tvSelectedDate.setText("Selected: " + dateFormat.format(selectedCalendar.getTime()));
-    }
+        String[] months = {"January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"};
+        int year = selectedCalendar.get(Calendar.YEAR);
+        int month = selectedCalendar.get(Calendar.MONTH);
+        int day = selectedCalendar.get(Calendar.DAY_OF_MONTH);
 
-    private boolean isSameDay(Calendar cal1, Calendar cal2) {
-        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
-                cal1.get(Calendar.MONTH) == cal2.get(Calendar.MONTH) &&
-                cal1.get(Calendar.DAY_OF_MONTH) == cal2.get(Calendar.DAY_OF_MONTH);
+        tvSelectedDate.setText("Selected: " + months[month] + " " + day + ", " + year);
     }
 
     private void setupColorPicker() {
@@ -335,6 +187,7 @@ public class MainActivity6 extends AppCompatActivity {
                 selectedColor = color;
             }
 
+            final int position = i;
             container.setOnClickListener(v -> {
                 // Reset all color borders
                 for (int j = 0; j < colorContainer.getChildCount(); j++) {
@@ -344,7 +197,7 @@ public class MainActivity6 extends AppCompatActivity {
 
                 // Set selected color border
                 container.setBackgroundResource(android.R.drawable.alert_dark_frame);
-                selectedColor = color;
+                selectedColor = colors[position];
 
                 Toast.makeText(MainActivity6.this, "Color selected", Toast.LENGTH_SHORT).show();
             });
@@ -417,7 +270,7 @@ public class MainActivity6 extends AppCompatActivity {
         }
 
         // Save task logic
-        String selectedDateStr = dateFormat.format(selectedCalendar.getTime());
+        String selectedDateStr = tvSelectedDate.getText().toString().replace("Selected: ", "");
 
         // Create task object
         Task newTask = new Task(taskName, selectedDateStr, startTime, endTime, selectedColor);
