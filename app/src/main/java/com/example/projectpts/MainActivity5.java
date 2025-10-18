@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
@@ -14,6 +15,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,14 +26,20 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 public class MainActivity5 extends AppCompatActivity {
 
     private LinearLayout tasksContainer;
+    private LinearLayout calendarGrid;
+    private TextView tvMonthYear, tvSelectedDate, tvSelectedDateHeader;
+    private ImageButton btnPrevMonth, btnNextMonth;
     private SharedPreferences sharedPreferences;
     private Gson gson;
     private static final String TAG = "MainActivity5";
@@ -40,6 +49,8 @@ public class MainActivity5 extends AppCompatActivity {
     private static final String COMPLETED_TASKS_KEY = "completed_tasks";
 
     private Set<String> completedTasks;
+    private Calendar currentCalendar;
+    private String selectedDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,14 +64,25 @@ public class MainActivity5 extends AppCompatActivity {
         // Load completed tasks
         completedTasks = sharedPreferences.getStringSet(COMPLETED_TASKS_KEY, new HashSet<>());
 
+        // Setup calendar dengan tanggal saat ini
+        currentCalendar = Calendar.getInstance();
+        selectedDate = getFormattedDate(currentCalendar);
+
         initViews();
         setupBackButton();
         setupFooterNavigation();
-        loadAndDisplayTasks();
+        setupCalendar();
+        loadAndDisplayTasksForSelectedDate();
     }
 
     private void initViews() {
         tasksContainer = findViewById(R.id.tasksContainer);
+        calendarGrid = findViewById(R.id.calendarGrid);
+        tvMonthYear = findViewById(R.id.tvMonthYear);
+        tvSelectedDate = findViewById(R.id.tvSelectedDate);
+        tvSelectedDateHeader = findViewById(R.id.tvSelectedDateHeader);
+        btnPrevMonth = findViewById(R.id.btnPrevMonth);
+        btnNextMonth = findViewById(R.id.btnNextMonth);
     }
 
     private void setupBackButton() {
@@ -82,29 +104,200 @@ public class MainActivity5 extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Logo Notes di footer - pergi ke MainActivity7 (INBOX/REMINDER) - YANG DIUBAH
+        // Logo Notes di footer - pergi ke MainActivity7 (INBOX/REMINDER)
         findViewById(R.id.footer_notes).setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity5.this, MainActivity7.class);
             startActivity(intent);
         });
     }
 
-    private void kembaliKeMainActivity3() {
-        Intent intent = new Intent(MainActivity5.this, MainActivity3.class);
-        startActivity(intent);
-        finish(); // Tutup activity ini agar tidak menumpuk di back stack
+    private void setupCalendar() {
+        updateMonthYearDisplay();
+        generateCalendar();
+        updateSelectedDateDisplay();
+
+        // Setup month navigation
+        btnPrevMonth.setOnClickListener(v -> {
+            currentCalendar.add(Calendar.MONTH, -1);
+            updateCalendar();
+        });
+
+        btnNextMonth.setOnClickListener(v -> {
+            currentCalendar.add(Calendar.MONTH, 1);
+            updateCalendar();
+        });
     }
 
-    private void loadAndDisplayTasks() {
+    private void updateCalendar() {
+        updateMonthYearDisplay();
+        generateCalendar();
+        loadAndDisplayTasksForSelectedDate();
+    }
+
+    private void updateMonthYearDisplay() {
+        SimpleDateFormat monthFormat = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
+        tvMonthYear.setText(monthFormat.format(currentCalendar.getTime()).toUpperCase());
+    }
+
+    private void generateCalendar() {
+        calendarGrid.removeAllViews();
+
+        Calendar tempCalendar = (Calendar) currentCalendar.clone();
+        tempCalendar.set(Calendar.DAY_OF_MONTH, 1);
+
+        int firstDayOfWeek = tempCalendar.get(Calendar.DAY_OF_WEEK);
+        int daysInMonth = tempCalendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+
+        // Create weeks
+        TableLayout tableLayout = new TableLayout(this);
+        tableLayout.setStretchAllColumns(true);
+        tableLayout.setLayoutParams(new TableLayout.LayoutParams(
+                TableLayout.LayoutParams.MATCH_PARENT,
+                TableLayout.LayoutParams.WRAP_CONTENT
+        ));
+
+        TableRow currentRow = new TableRow(this);
+        currentRow.setLayoutParams(new TableRow.LayoutParams(
+                TableRow.LayoutParams.MATCH_PARENT,
+                TableRow.LayoutParams.WRAP_CONTENT
+        ));
+
+        // Add empty cells for days before the first day of month
+        for (int i = 1; i < firstDayOfWeek; i++) {
+            TextView emptyView = createEmptyDateView();
+            currentRow.addView(emptyView);
+        }
+
+        // Add days of the month
+        for (int day = 1; day <= daysInMonth; day++) {
+            Calendar dayCalendar = (Calendar) currentCalendar.clone();
+            dayCalendar.set(Calendar.DAY_OF_MONTH, day);
+
+            String date = getFormattedDate(dayCalendar);
+            boolean isSelected = date.equals(selectedDate);
+            boolean hasTasks = hasTasksForDate(date);
+
+            TextView dateView = createDateView(day, date, isSelected, hasTasks);
+            currentRow.addView(dateView);
+
+            // Start new row after 7 days
+            if ((firstDayOfWeek - 1 + day) % 7 == 0) {
+                tableLayout.addView(currentRow);
+                currentRow = new TableRow(this);
+                currentRow.setLayoutParams(new TableRow.LayoutParams(
+                        TableRow.LayoutParams.MATCH_PARENT,
+                        TableRow.LayoutParams.WRAP_CONTENT
+                ));
+            }
+        }
+
+        // Add remaining empty cells
+        int remainingCells = 7 - currentRow.getChildCount();
+        for (int i = 0; i < remainingCells; i++) {
+            TextView emptyView = createEmptyDateView();
+            currentRow.addView(emptyView);
+        }
+
+        tableLayout.addView(currentRow);
+        calendarGrid.addView(tableLayout);
+    }
+
+    private TextView createDateView(int day, final String date, boolean isSelected, boolean hasTasks) {
+        TextView dateView = new TextView(this);
+        TableRow.LayoutParams params = new TableRow.LayoutParams(
+                0, TableRow.LayoutParams.WRAP_CONTENT, 1f
+        );
+        params.setMargins(2, 2, 2, 2);
+        dateView.setLayoutParams(params);
+
+        dateView.setText(String.valueOf(day));
+        dateView.setGravity(Gravity.CENTER);
+        dateView.setPadding(8, 12, 8, 12);
+        dateView.setTextSize(12);
+
+        // Styling berdasarkan selection dan tasks
+        if (isSelected) {
+            dateView.setBackgroundResource(R.drawable.selected_date_background);
+            dateView.setTextColor(Color.WHITE);
+        } else if (hasTasks) {
+            dateView.setBackgroundResource(R.drawable.has_tasks_date_background);
+            dateView.setTextColor(Color.WHITE);
+        } else {
+            dateView.setBackgroundResource(R.drawable.normal_date_background);
+            dateView.setTextColor(Color.parseColor("#2C3E50"));
+        }
+
+        // Click listener
+        dateView.setOnClickListener(v -> {
+            selectedDate = date;
+            updateCalendar();
+            loadAndDisplayTasksForSelectedDate();
+        });
+
+        return dateView;
+    }
+
+    private TextView createEmptyDateView() {
+        TextView emptyView = new TextView(this);
+        TableRow.LayoutParams params = new TableRow.LayoutParams(
+                0, TableRow.LayoutParams.WRAP_CONTENT, 1f
+        );
+        params.setMargins(2, 2, 2, 2);
+        emptyView.setLayoutParams(params);
+        emptyView.setBackgroundColor(Color.TRANSPARENT);
+        return emptyView;
+    }
+
+    private boolean hasTasksForDate(String date) {
         List<Task> allTasks = loadTasksFromStorage();
+        for (Task task : allTasks) {
+            if (task.getDate().equals(date)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-        Log.d(TAG, "Loading tasks for display. Total: " + allTasks.size());
+    private void loadAndDisplayTasksForSelectedDate() {
+        List<Task> allTasks = loadTasksFromStorage();
+        List<Task> filteredTasks = filterTasksByDate(allTasks, selectedDate);
 
-        if (allTasks.isEmpty()) {
+        Log.d(TAG, "Loading tasks for date: " + selectedDate + ", Found: " + filteredTasks.size());
+
+        if (filteredTasks.isEmpty()) {
             showEmptyState();
         } else {
-            displayTasks(allTasks);
+            displayTasks(filteredTasks);
         }
+    }
+
+    private List<Task> filterTasksByDate(List<Task> tasks, String date) {
+        List<Task> filteredTasks = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task.getDate().equals(date)) {
+                filteredTasks.add(task);
+            }
+        }
+        return filteredTasks;
+    }
+
+    private void updateSelectedDateDisplay() {
+        tvSelectedDate.setText(selectedDate);
+
+        // Update header berdasarkan apakah hari ini atau bukan
+        Calendar today = Calendar.getInstance();
+        String todayFormatted = getFormattedDate(today);
+
+        if (selectedDate.equals(todayFormatted)) {
+            tvSelectedDateHeader.setText("Today's Tasks: ");
+        } else {
+            tvSelectedDateHeader.setText("Tasks for: ");
+        }
+    }
+
+    private String getFormattedDate(Calendar calendar) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.getDefault());
+        return dateFormat.format(calendar.getTime());
     }
 
     private void displayTasks(List<Task> tasks) {
@@ -272,15 +465,13 @@ public class MainActivity5 extends AppCompatActivity {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         ));
-        tvEmpty.setText(getString(R.string.no_tasks_available));
+        tvEmpty.setText("No tasks for " + selectedDate);
         tvEmpty.setTextColor(Color.GRAY);
         tvEmpty.setTextSize(16);
         tvEmpty.setTextAlignment(TextView.TEXT_ALIGNMENT_CENTER);
         tvEmpty.setPadding(0, dpToPx(25), 0, dpToPx(25));
 
         tasksContainer.addView(tvEmpty);
-
-        Toast.makeText(this, getString(R.string.no_tasks_found), Toast.LENGTH_SHORT).show();
     }
 
     private List<Task> loadTasksFromStorage() {
@@ -299,11 +490,18 @@ public class MainActivity5 extends AppCompatActivity {
         }
     }
 
+    private void kembaliKeMainActivity3() {
+        Intent intent = new Intent(MainActivity5.this, MainActivity3.class);
+        startActivity(intent);
+        finish(); // Tutup activity ini agar tidak menumpuk di back stack
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
         // Refresh data ketika kembali ke activity ini
-        loadAndDisplayTasks();
+        updateCalendar();
+        loadAndDisplayTasksForSelectedDate();
     }
 
     // Helper method untuk konversi dp ke px

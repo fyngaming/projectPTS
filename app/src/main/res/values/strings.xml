@@ -58,4 +58,5 @@
     <string name="please_enter_start_time">Please enter start time</string>
     <string name="please_enter_end_time">Please enter end time</string>
     <string name="please_enter_valid_time">Please enter valid time format (HH:mm)</string>
+    <string name="default_web_client_id">"666490604005-lp8taipk0v5s9b665r6mf4ajtt1jbe3c.apps.googleusercontent.com"</string>
 </resources>

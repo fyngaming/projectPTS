@@ -5,15 +5,14 @@ plugins {
 
 android {
     namespace = "com.example.projectpts"
-    compileSdk = 36
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.projectpts"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -33,18 +32,22 @@ android {
 }
 
 dependencies {
-
     implementation(libs.appcompat)
     implementation(libs.material)
-    implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation(libs.activity)
+
+    // FIREBASE
     implementation(libs.firebase.auth)
-    implementation(libs.credentials)
-    implementation(libs.credentials.play.services.auth)
-    implementation(libs.googleid)
+    implementation("com.google.firebase:firebase-analytics:21.5.0")
+
+    // GOOGLE SIGN-IN
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
 }

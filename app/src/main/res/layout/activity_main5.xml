@@ -52,16 +52,42 @@
             android:background="@drawable/notes_edittext_background"
             android:padding="16dp">
 
-            <!-- Month Year -->
-            <TextView
-                android:id="@+id/tvMonthYear"
-                android:layout_width="wrap_content"
+            <!-- Month Navigation -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="SEPTEMBER 2025"
-                android:textColor="#2C3E50"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="16dp" />
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="16dp">
+
+                <ImageButton
+                    android:id="@+id/btnPrevMonth"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/ic_arrow_forward_black"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Previous month" />
+
+                <TextView
+                    android:id="@+id/tvMonthYear"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16dp"
+                    android:text="SEPTEMBER 2025"
+                    android:textColor="#2C3E50"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:padding="12dp" />
+
+                <ImageButton
+                    android:id="@+id/btnNextMonth"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/ic_arrow_forward_black"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Next month" />
+
+            </LinearLayout>
 
             <!-- Days Header -->
             <TableLayout
@@ -145,98 +171,45 @@
                 </TableRow>
             </TableLayout>
 
-            <!-- Dates Row -->
-            <TableLayout
-                android:id="@+id/datesGrid"
+            <!-- Calendar Grid -->
+            <LinearLayout
+                android:id="@+id/calendarGrid"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:stretchColumns="*">
-
-                <TableRow>
-                    <TextView
-                        android:id="@+id/date13"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="13"
-                        android:textColor="#2C3E50"
-                        android:textSize="12sp"
-                        android:padding="8dp" />
-                    <TextView
-                        android:id="@+id/date14"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="14"
-                        android:textColor="#2C3E50"
-                        android:textSize="12sp"
-                        android:padding="8dp" />
-                    <TextView
-                        android:id="@+id/date15"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="15"
-                        android:textColor="#2C3E50"
-                        android:textSize="12sp"
-                        android:padding="8dp" />
-                    <TextView
-                        android:id="@+id/date16"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="16"
-                        android:textColor="#2C3E50"
-                        android:textSize="12sp"
-                        android:padding="8dp" />
-                    <TextView
-                        android:id="@+id/date17"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="17"
-                        android:textColor="#2C3E50"
-                        android:textSize="12sp"
-                        android:padding="8dp" />
-                    <TextView
-                        android:id="@+id/date18"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="18"
-                        android:textColor="#2C3E50"
-                        android:textSize="12sp"
-                        android:padding="8dp" />
-                    <TextView
-                        android:id="@+id/date19"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="19"
-                        android:textColor="#2C3E50"
-                        android:textSize="12sp"
-                        android:padding="8dp" />
-                </TableRow>
-            </TableLayout>
+                android:orientation="vertical">
+                <!-- Calendar akan di-generate secara dinamis di sini -->
+            </LinearLayout>
 
         </LinearLayout>
 
-        <!-- Today's Tasks Header -->
-        <TextView
+        <!-- Selected Date & Tasks Header -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:layout_marginBottom="16dp"
-            android:text="Today's Tasks"
-            android:textColor="#2C3E50"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvSelectedDateHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tasks for: "
+                android:textColor="#2C3E50"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvSelectedDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Today"
+                android:textColor="#2C3E50"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginStart="8dp" />
+
+        </LinearLayout>
 
         <!-- List of Tasks/Catatan -->
         <ScrollView
