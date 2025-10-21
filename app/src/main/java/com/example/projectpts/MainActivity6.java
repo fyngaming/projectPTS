@@ -43,6 +43,9 @@ public class MainActivity6 extends AppCompatActivity {
     private String selectedDate;
     private int selectedColor = Color.parseColor("#FF6B6B");
 
+    private CalendarAdapter calendarAdapter;
+    private List<MainActivity6.CalendarDay> calendarDays;
+
     private static final String PREFS_NAME = "TaskPrefs";
     private static final String TASKS_KEY = "tasks";
 
@@ -103,13 +106,13 @@ public class MainActivity6 extends AppCompatActivity {
         btnPrevMonth.setOnClickListener(v -> {
             currentCalendar.add(Calendar.MONTH, -1);
             updateMonthYearDisplay();
-            setupRecyclerViewCalendar();
+            refreshCalendar();
         });
 
         btnNextMonth.setOnClickListener(v -> {
             currentCalendar.add(Calendar.MONTH, 1);
             updateMonthYearDisplay();
-            setupRecyclerViewCalendar();
+            refreshCalendar();
         });
 
         // Update selected date display
@@ -118,25 +121,51 @@ public class MainActivity6 extends AppCompatActivity {
 
     private void setupRecyclerViewCalendar() {
         // Buat list tanggal untuk bulan ini
-        List<CalendarDay> calendarDays = generateCalendarDays();
+        calendarDays = generateCalendarDays();
 
         // Setup adapter untuk RecyclerView
-        CalendarAdapter adapter = new CalendarAdapter(calendarDays, selectedDate, new CalendarAdapter.OnDateClickListener() {
+        calendarAdapter = new CalendarAdapter(calendarDays, selectedDate, new CalendarAdapter.OnDateClickListener() {
             @Override
             public void onDateClick(String date) {
+                // Update selected date dan refresh tampilan
                 selectedDate = date;
                 updateSelectedDateDisplay();
-                // Refresh adapter untuk update selection
-                setupRecyclerViewCalendar();
+                refreshCalendarSelection();
             }
         });
 
         recyclerViewCalendar.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        recyclerViewCalendar.setAdapter(adapter);
+        recyclerViewCalendar.setAdapter(calendarAdapter);
     }
 
-    private List<CalendarDay> generateCalendarDays() {
-        List<CalendarDay> days = new ArrayList<>();
+    private void refreshCalendar() {
+        calendarDays = generateCalendarDays();
+        if (calendarAdapter != null) {
+            // Buat adapter baru dengan data yang diperbarui
+            calendarAdapter = new CalendarAdapter(calendarDays, selectedDate, new CalendarAdapter.OnDateClickListener() {
+                @Override
+                public void onDateClick(String date) {
+                    selectedDate = date;
+                    updateSelectedDateDisplay();
+                    refreshCalendarSelection();
+                }
+            });
+            recyclerViewCalendar.setAdapter(calendarAdapter);
+        }
+    }
+
+    private void refreshCalendarSelection() {
+        if (calendarAdapter != null) {
+            // Update semua item untuk menandai yang terpilih
+            for (MainActivity6.CalendarDay day : calendarDays) {
+                day.setSelected(day.getFullDate().equals(selectedDate));
+            }
+            calendarAdapter.notifyDataSetChanged();
+        }
+    }
+
+    private List<MainActivity6.CalendarDay> generateCalendarDays() {
+        List<MainActivity6.CalendarDay> days = new ArrayList<>();
 
         Calendar tempCalendar = (Calendar) currentCalendar.clone();
         int maxDaysInMonth = tempCalendar.getActualMaximum(Calendar.DAY_OF_MONTH);
@@ -155,7 +184,7 @@ public class MainActivity6 extends AppCompatActivity {
             String dayName = dayFormat.format(dayCalendar.getTime());
             String dateNumber = dateFormat.format(dayCalendar.getTime());
 
-            days.add(new CalendarDay(dayName, dateNumber, date, isSelected));
+            days.add(new MainActivity6.CalendarDay(dayName, dateNumber, date, isSelected));
         }
 
         return days;
@@ -341,6 +370,10 @@ public class MainActivity6 extends AppCompatActivity {
 
         public boolean isSelected() {
             return isSelected;
+        }
+
+        public void setSelected(boolean selected) {
+            isSelected = selected;
         }
     }
 }

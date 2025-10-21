@@ -1,6 +1,6 @@
 package com.example.projectpts;
 
-public class Note {
+public class  Note {
     private String id;
     private String title;
     private String content;

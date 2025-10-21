@@ -14,7 +14,7 @@
                 super.onCreate(savedInstanceState);
                 setContentView(R.layout.activity_main2);
 
-                Button btnGetStarted = findViewById(R.id.btnGetStarted);
+                 Button btnGetStarted = findViewById(R.id.btnGetStarted);
 
                 btnGetStarted.setOnClickListener(v -> {
                     Toast.makeText(MainActivity2.this, "Welcome! Let's get started!", Toast.LENGTH_SHORT).show();
