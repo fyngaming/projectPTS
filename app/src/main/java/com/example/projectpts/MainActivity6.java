@@ -68,6 +68,9 @@ public class MainActivity6 extends AppCompatActivity {
         currentCalendar = Calendar.getInstance();
         selectedDate = getFormattedDate(currentCalendar);
 
+        // Inisialisasi selected color dengan warna pertama
+        selectedColor = Color.parseColor(colorCodes[0]);
+
         initViews();
         setupCalendar();
         setupColorPicker();
@@ -204,41 +207,69 @@ public class MainActivity6 extends AppCompatActivity {
     private void setupColorPicker() {
         colorContainer.removeAllViews();
 
-        int size = dpToPx(32);
+        int size = dpToPx(40); // Sedikit lebih besar untuk accommodate border
         int margin = dpToPx(6);
 
-        for (String colorCode : colorCodes) {
-            View colorView = new View(this);
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
-            params.setMargins(margin, 0, margin, 0);
-            colorView.setLayoutParams(params);
-            colorView.setBackgroundColor(Color.parseColor(colorCode));
+        for (int i = 0; i < colorCodes.length; i++) {
+            String colorCode = colorCodes[i];
 
-            // Add border and rounded corners
+            // Create outer container for border
+            LinearLayout colorItemLayout = new LinearLayout(this);
+            LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(size, size);
+            containerParams.setMargins(margin, 0, margin, 0);
+            colorItemLayout.setLayoutParams(containerParams);
+            colorItemLayout.setOrientation(LinearLayout.VERTICAL);
+            colorItemLayout.setPadding(dpToPx(2), dpToPx(2), dpToPx(2), dpToPx(2)); // Padding untuk border
+
+            // Apply border jika warna ini yang sedang dipilih
+            if (Color.parseColor(colorCode) == selectedColor) {
+                colorItemLayout.setBackgroundResource(R.drawable.color_circle_selected);
+            }
+
+            // Create inner color view
+            View colorView = new View(this);
+            LinearLayout.LayoutParams colorParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT
+            );
+            colorView.setLayoutParams(colorParams);
+
+            // Set rounded corners untuk inner view
             colorView.setBackground(getResources().getDrawable(R.drawable.color_circle_background));
             colorView.getBackground().setTint(Color.parseColor(colorCode));
 
+            // Add color view to container
+            colorItemLayout.addView(colorView);
+
             // Add click listener
+            final int position = i;
             final String finalColorCode = colorCode;
-            colorView.setOnClickListener(v -> {
+            colorItemLayout.setOnClickListener(v -> {
                 selectedColor = Color.parseColor(finalColorCode);
-                updateColorSelection(colorView);
+                updateColorSelection(position);
             });
 
-            colorContainer.addView(colorView);
+            colorContainer.addView(colorItemLayout);
         }
     }
 
-    private void updateColorSelection(View selectedView) {
-        // Reset all colors
+    private void updateColorSelection(int selectedPosition) {
+        // Reset semua border dan set border untuk yang dipilih
         for (int i = 0; i < colorContainer.getChildCount(); i++) {
-            View child = colorContainer.getChildAt(i);
-            child.setBackground(getResources().getDrawable(R.drawable.color_circle_background));
-            child.getBackground().setTint(Color.parseColor(colorCodes[i]));
-        }
+            View colorItemLayout = colorContainer.getChildAt(i);
 
-        // Highlight selected color
-        selectedView.setBackground(getResources().getDrawable(R.drawable.color_circle_selected));
+            if (i == selectedPosition) {
+                // Set border hitam untuk warna yang dipilih
+                colorItemLayout.setBackgroundResource(R.drawable.color_circle_selected);
+            } else {
+                // Hapus border untuk warna lain
+                colorItemLayout.setBackgroundResource(0);
+            }
+
+            // Pastikan warna inner view tetap
+            View colorView = ((LinearLayout) colorItemLayout).getChildAt(0);
+            colorView.getBackground().setTint(Color.parseColor(colorCodes[i]));
+        }
     }
 
     private void setupSaveButton() {
@@ -286,6 +317,11 @@ public class MainActivity6 extends AppCompatActivity {
         if (!isValidTime(startTime) || !isValidTime(endTime)) {
             Toast.makeText(this, R.string.please_enter_valid_time, Toast.LENGTH_SHORT).show();
             return;
+        }
+
+        // Pastikan selectedColor sudah ter-set
+        if (selectedColor == 0) {
+            selectedColor = Color.parseColor(colorCodes[0]); // Fallback ke warna pertama
         }
 
         // Buat task baru dengan date yang dipilih
@@ -340,6 +376,14 @@ public class MainActivity6 extends AppCompatActivity {
     private int dpToPx(int dp) {
         float density = getResources().getDisplayMetrics().density;
         return Math.round(dp * density);
+    }
+
+    // Method untuk reset color selection (jika diperlukan)
+    private void resetColorSelection() {
+        for (int i = 0; i < colorContainer.getChildCount(); i++) {
+            View colorItemLayout = colorContainer.getChildAt(i);
+            colorItemLayout.setBackgroundResource(0); // Hapus border
+        }
     }
 
     // Model class untuk calendar day

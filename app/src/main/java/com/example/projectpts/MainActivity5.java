@@ -72,6 +72,7 @@ public class MainActivity5 extends AppCompatActivity {
         setupBackButton();
         setupFooterNavigation();
         setupCalendar();
+        updateSelectedDateDisplay();
         loadAndDisplayTasksForSelectedDate();
     }
 
@@ -83,6 +84,9 @@ public class MainActivity5 extends AppCompatActivity {
         tvSelectedDateHeader = findViewById(R.id.tvSelectedDateHeader);
         btnPrevMonth = findViewById(R.id.btnPrevMonth);
         btnNextMonth = findViewById(R.id.btnNextMonth);
+
+        // Sembunyikan tvSelectedDate
+        tvSelectedDate.setVisibility(View.GONE);
     }
 
     private void setupBackButton() {
@@ -131,6 +135,7 @@ public class MainActivity5 extends AppCompatActivity {
     private void updateCalendar() {
         updateMonthYearDisplay();
         generateCalendar();
+        updateSelectedDateDisplay();
         loadAndDisplayTasksForSelectedDate();
     }
 
@@ -230,8 +235,8 @@ public class MainActivity5 extends AppCompatActivity {
         // Click listener
         dateView.setOnClickListener(v -> {
             selectedDate = date;
+            updateSelectedDateDisplay();
             updateCalendar();
-            loadAndDisplayTasksForSelectedDate();
         });
 
         return dateView;
@@ -282,17 +287,61 @@ public class MainActivity5 extends AppCompatActivity {
     }
 
     private void updateSelectedDateDisplay() {
-        tvSelectedDate.setText(selectedDate);
+        Log.d(TAG, "Updating header for date: " + selectedDate);
 
-        // Update header berdasarkan apakah hari ini atau bukan
-        Calendar today = Calendar.getInstance();
-        String todayFormatted = getFormattedDate(today);
+        // Update header dengan format yang lebih rapi
+        String formattedHeader = formatDateHeader(selectedDate);
+        tvSelectedDateHeader.setText(formattedHeader);
+        Log.d(TAG, "Setting header: " + formattedHeader);
+    }
 
-        if (selectedDate.equals(todayFormatted)) {
-            tvSelectedDateHeader.setText("Today's Tasks: ");
-        } else {
-            tvSelectedDateHeader.setText("Tasks for: ");
+    // Method untuk format header yang lebih rapi
+    private String formatDateHeader(String date) {
+        try {
+            SimpleDateFormat inputFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.getDefault());
+            java.util.Date parsedDate = inputFormat.parse(date);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(parsedDate);
+
+            Calendar today = Calendar.getInstance();
+            Calendar yesterday = getYesterday();
+            Calendar tomorrow = getTomorrow();
+
+            String todayFormatted = getFormattedDate(today);
+            String yesterdayFormatted = getFormattedDate(yesterday);
+            String tomorrowFormatted = getFormattedDate(tomorrow);
+
+            // Cek jika hari ini, kemarin, atau besok
+            if (date.equals(todayFormatted)) {
+                return "Today";
+            } else if (date.equals(yesterdayFormatted)) {
+                return "Yesterday";
+            } else if (date.equals(tomorrowFormatted)) {
+                return "Tomorrow";
+            } else {
+                // Format baru yang lebih rapi: "Tasks for Day, Month Date, Year"
+                SimpleDateFormat headerFormat = new SimpleDateFormat("EEE, MMMM d, yyyy", Locale.getDefault());
+                return "Tasks for " + headerFormat.format(parsedDate);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error formatting date header: " + date, e);
+            return "Tasks for " + date;
         }
+    }
+
+    // Helper method untuk mendapatkan tanggal kemarin
+    private Calendar getYesterday() {
+        Calendar yesterday = Calendar.getInstance();
+        yesterday.add(Calendar.DAY_OF_MONTH, -1);
+        return yesterday;
+    }
+
+    // Helper method untuk mendapatkan tanggal besok
+    private Calendar getTomorrow() {
+        Calendar tomorrow = Calendar.getInstance();
+        tomorrow.add(Calendar.DAY_OF_MONTH, 1);
+        return tomorrow;
     }
 
     private String getFormattedDate(Calendar calendar) {
@@ -324,13 +373,16 @@ public class MainActivity5 extends AppCompatActivity {
         View colorIndicator = taskItem.findViewById(R.id.colorIndicator);
         LinearLayout taskItemLayout = taskItem.findViewById(R.id.taskItemLayout);
 
-        // Set task data
-        tvTaskName.setText(task.getTaskName());
+        // Set task data - BERSIHKAN DATA TASK NAME DARI KATA "TODAY"
+        String cleanTaskName = cleanTaskName(task.getTaskName());
+        tvTaskName.setText(cleanTaskName);
 
-        String dateText = getString(R.string.task_date, task.getDate());
+        // Format tanggal dengan benar
+        String cleanDate = cleanDateString(task.getDate());
+        String dateText = "Date: " + cleanDate;
         tvTaskDate.setText(dateText);
 
-        String timeText = getString(R.string.task_time, task.getStartTime(), task.getEndTime());
+        String timeText = "Time: " + task.getStartTime() + " - " + task.getEndTime();
         tvTaskTime.setText(timeText);
 
         // Set task color
@@ -356,6 +408,22 @@ public class MainActivity5 extends AppCompatActivity {
         tasksContainer.addView(taskItem);
     }
 
+    // Method untuk membersihkan task name dari kata "Today" yang tidak diinginkan
+    private String cleanTaskName(String taskName) {
+        if (taskName == null) return "";
+
+        // Hapus kata "Today" dari task name jika ada
+        return taskName.replace("Today", "").replace("today", "").trim();
+    }
+
+    // Method untuk membersihkan string tanggal
+    private String cleanDateString(String date) {
+        if (date == null) return "";
+
+        // Hapus kata "Today" dari tanggal jika ada
+        return date.replace("Today", "").replace("today", "").trim();
+    }
+
     private void toggleTaskCompletion(Task task, boolean completed,
                                       TextView tvTaskName, TextView tvTaskDate, TextView tvTaskTime,
                                       RelativeLayout checkCircle, ImageView checkMark) {
@@ -366,12 +434,12 @@ public class MainActivity5 extends AppCompatActivity {
             // Mark as completed
             completedTasks.add(taskIdentifier);
             playCheckmarkAnimation(checkCircle, checkMark);
-            applyTextAnimation(tvTaskName); // Animasi teks saat dicentang
+            applyTextAnimation(tvTaskName);
         } else {
             // Mark as incomplete
             completedTasks.remove(taskIdentifier);
             playUncheckAnimation(checkCircle, checkMark);
-            removeTextAnimation(tvTaskName); // Hapus animasi teks saat unchecked
+            removeTextAnimation(tvTaskName);
         }
 
         // Save completed tasks
@@ -460,18 +528,56 @@ public class MainActivity5 extends AppCompatActivity {
     private void showEmptyState() {
         tasksContainer.removeAllViews();
 
+        // Tentukan pesan berdasarkan tanggal yang dipilih dengan format yang konsisten
+        String message = formatEmptyStateMessage(selectedDate);
+
         TextView tvEmpty = new TextView(this);
         tvEmpty.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         ));
-        tvEmpty.setText("No tasks for " + selectedDate);
+        tvEmpty.setText(message);
         tvEmpty.setTextColor(Color.GRAY);
         tvEmpty.setTextSize(16);
         tvEmpty.setTextAlignment(TextView.TEXT_ALIGNMENT_CENTER);
         tvEmpty.setPadding(0, dpToPx(25), 0, dpToPx(25));
 
         tasksContainer.addView(tvEmpty);
+    }
+
+    // Method untuk format pesan empty state yang konsisten
+    private String formatEmptyStateMessage(String date) {
+        try {
+            SimpleDateFormat inputFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.getDefault());
+            java.util.Date parsedDate = inputFormat.parse(date);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(parsedDate);
+
+            Calendar today = Calendar.getInstance();
+            Calendar yesterday = getYesterday();
+            Calendar tomorrow = getTomorrow();
+
+            String todayFormatted = getFormattedDate(today);
+            String yesterdayFormatted = getFormattedDate(yesterday);
+            String tomorrowFormatted = getFormattedDate(tomorrow);
+
+            // Cek jika hari ini, kemarin, atau besok
+            if (date.equals(todayFormatted)) {
+                return "No tasks for today";
+            } else if (date.equals(yesterdayFormatted)) {
+                return "No tasks for yesterday";
+            } else if (date.equals(tomorrowFormatted)) {
+                return "No tasks for tomorrow";
+            } else {
+                // Format yang konsisten dengan header: "No tasks for Day, Month Date, Year"
+                SimpleDateFormat emptyStateFormat = new SimpleDateFormat("EEE, MMMM d, yyyy", Locale.getDefault());
+                return "No tasks for " + emptyStateFormat.format(parsedDate);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error formatting empty state message: " + date, e);
+            return "No tasks for " + date;
+        }
     }
 
     private List<Task> loadTasksFromStorage() {
@@ -493,13 +599,14 @@ public class MainActivity5 extends AppCompatActivity {
     private void kembaliKeMainActivity3() {
         Intent intent = new Intent(MainActivity5.this, MainActivity3.class);
         startActivity(intent);
-        finish(); // Tutup activity ini agar tidak menumpuk di back stack
+        finish();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         // Refresh data ketika kembali ke activity ini
+        updateSelectedDateDisplay();
         updateCalendar();
         loadAndDisplayTasksForSelectedDate();
     }
